@@ -24,6 +24,9 @@ This system combines:
 - **Temporal expression parsing** for time-based searches. (3 weeks ago, 10 months ago, etc.)
 
 ## Example Queries
+#### You can convert any natural language query to 3 major constituents: File type, temporal data (time related), and miscellaneous (file name, path etc.) I used this idea as base to build the whole project, and yes it is that simple.
+
+
 
 | Natural Language Query | What It Finds |
 |------------------------|---------------|
