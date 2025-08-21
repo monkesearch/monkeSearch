@@ -23,6 +23,18 @@ This system combines:
 - **Intelligent file type recognition** that understands context (e.g., "resume" → PDF/DOCX files)
 - **Temporal expression parsing** for time-based searches. (3 weeks ago, 10 months ago, etc.)
 
+## Example Queries
+
+| Natural Language Query | What It Finds |
+|------------------------|---------------|
+| `"photos from yesterday"` | Image files modified in the last day |
+| `"python scripts from three days ago"` | .py and .ipynb files from 3 days ago |
+| `"old music files"` | Audio files with "old" in name or content |
+| `"pdf invoices from 2023"` | PDF files from 2023 with "invoices" keyword |
+| `"resume from last week"` | Recent DOC/DOCX/PDF files with "resume" |
+| `"code files"` | Source code files of any language |
+
+
 ## Features
 
 - **Natural Language Queries**: Search with phrases like "old music files" or "python scripts three days ago"
@@ -111,16 +123,6 @@ for path in results:
     print(path)
 ```
 
-## Example Queries
-
-| Natural Language Query | What It Finds |
-|------------------------|---------------|
-| `"photos from yesterday"` | Image files modified in the last day |
-| `"python scripts from three days ago"` | .py and .ipynb files from 3 days ago |
-| `"old music files"` | Audio files with "old" in name or content |
-| `"pdf invoices from 2023"` | PDF files from 2023 with "invoices" keyword |
-| `"resume from last week"` | Recent DOC/DOCX/PDF files with "resume" |
-| `"code files"` | Source code files of any language |
 
 ## How It Works
 
