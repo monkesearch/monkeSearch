@@ -14,6 +14,9 @@ A prototype system that brings natural language search capabilities to macOS Spo
 
 ## Overview
 
+![usage gif](inference.gif)
+
+
 This system combines:
 - **AI-powered query parsing** using a local LLM (Qwen 0.6B) to understand natural language
 - **Native macOS Spotlight integration** for fast, efficient file searching
