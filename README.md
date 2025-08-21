@@ -191,6 +191,8 @@ This is an early prototype. Potential enhancements include:
 - [ ] Custom file type definitions
 - [ ] More adaptable and easier usage (for example, terminal usage can be like: `where resume pdf 3 weeks ago`)
 - [ ] Source identification, MacOS also contains data about the origin of the file (example: files from google drive)
+- [ ] Performance optimizations
+- [ ] More features!
 
 ## Architecture
 
