@@ -11,6 +11,9 @@ A prototype system that brings natural language search capabilities to macOS Spo
 > current turnaround time for this tool to recieve a query and give out files is around 1 second and doesn't exceed it, the largest bottleneck is model inference. This is under active
 > development and any new suggestions + PRs are welcome. My goal for this tool is to be open source, safe and cross platform. So developers experienced in Windows/Linux Indexing are
 > very welcome to collaborate and develop their versions together.
+>
+> 
+> please star the repo too, if you've read it till here :P
 
 ## Overview
 
