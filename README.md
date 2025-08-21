@@ -22,7 +22,7 @@ A prototype system that brings natural language search capabilities to macOS Spo
 > shows zero results because i don't have any videos related to "wedding"
 This system combines:
 - **AI-powered query parsing** using a local LLM (Qwen 0.6B) to understand natural language
-- **Native macOS Spotlight integration** for fast, efficient file searching
+- **Native macOS Spotlight integration** for fast, efficient file searching. (cross platform support is very welcome for development!)
 - **Intelligent file type recognition** that understands context (e.g., "resume" → PDF/DOCX files)
 - **Temporal expression parsing** for time-based searches. (3 weeks ago, 10 months ago, etc.)
 
