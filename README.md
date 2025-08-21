@@ -162,12 +162,9 @@ The system recognizes these categories:
 
 ## Limitations
 
-- **macOS Only**: Requires macOS Spotlight APIs
 - **Indexed Files Only**: Only searches files indexed by Spotlight
-- **Local Model Limitations**: The small AI model may misunderstand complex queries
-- **Basic Temporal Parsing**: Currently supports simple time expressions
-- **English Only**: Query parsing optimized for English
-- **No Relative Paths**: Returns absolute file paths only
+- **Local Model Limitations**: The small AI model may misunderstand very complex queries
+- **Basic Temporal Parsing**: Currently supports simple time expressions (More features to be added soon!)
 
 ## Troubleshooting
 
