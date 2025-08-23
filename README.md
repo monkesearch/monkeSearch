@@ -1,6 +1,6 @@
 # monkeSearch
 
-A prototype system that brings natural language search capabilities to macOS Spotlight, allowing you to search for files using everyday language like "python scripts from last week" or "photos from yesterday". Nothing leaves your pc, offline inference and can even run on potato PCs. You don't need a massive GPU rig to run the small model backing the intelligence.
+A prototype system that brings natural language search capabilities to your file system (macOS only for now), allowing you to search for files using everyday language like "python scripts from last week" or "photos from yesterday". Nothing leaves your pc, offline inference and can even run on potato PCs. You don't need a massive GPU rig to run the small model backing the intelligence.
 
 
 > ⚠️ **Prototype**: This is an initial proof-of-concept implementation. Expect rough edges and limited functionality.
