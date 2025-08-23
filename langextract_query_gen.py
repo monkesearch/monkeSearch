@@ -158,7 +158,20 @@ class QueryExtractor:
     
     def parse_query(self, query):
         """Parse query and return structured data"""
-        result = self.extract(query)
+        
+        # stop words which will be removed right away, before LLM even gets it.
+        STOP_WORDS = {
+            'in', 'at', 'of', 'by', 'as', 'me',
+            'the', 'a', 'an', 'and', 'any',
+            'find', 'search', 'list', 'file', 'files',
+            'ago', 'back',
+            'past', 'earlier', 'folder'
+        }
+        words = query.split()
+        filtered_words = [word for word in words if word.lower() not in STOP_WORDS]
+        cleaned_query = " ".join(filtered_words)
+        
+        result = self.extract(cleaned_query)
         
         file_types = []
         temporal_data = []
@@ -180,15 +193,21 @@ class QueryExtractor:
                     all_extracted_text.append(extraction.extraction_text)
         
         # Get remaining text (misc keywords)
-        misc_keywords = query
+        misc_keywords = cleaned_query
         for text in all_extracted_text:
             misc_keywords = misc_keywords.replace(text, "").strip()
+        
+        # Filter out words with 2 or fewer characters
+        if misc_keywords:
+            words = misc_keywords.split()
+            filtered_words = [word for word in words if len(word) > 2]
+            misc_keywords = " ".join(filtered_words)
         
         return {
             "file_types": file_types,
             "temporal": temporal_data,
             "misc_keywords": misc_keywords,
-            "original_query": query
+            "original_query": query # original query with stop words, just for reference
         }
 
 
