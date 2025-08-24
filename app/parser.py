@@ -2,15 +2,11 @@
 from langextract_query_gen import QueryExtractor
 from Foundation import NSMetadataQuery, NSPredicate, NSCompoundPredicate, NSRunLoop, NSDate
 from datetime import datetime, timedelta
-from utitools import uti_for_suffix
-import json
-
+from utitools import uti_for_suffix, content_type_tree_for_uti
 class FileSearchParser:
     
     def __init__(self):
         self.extractor = QueryExtractor()
-        with open('uti_tree.json', 'r') as f:
-            self.uti_hierarchy = json.load(f)
     
     def calculate_date_predicate(self, temporal_data):
         """Convert temporal data to date predicate (placeholder for now)"""
@@ -38,10 +34,11 @@ class FileSearchParser:
         utis = set()
         for ft in parsed['file_types']:
             uti = uti_for_suffix(ft.lower())
-            if uti and uti in self.uti_hierarchy:
-                hierarchy = self.uti_hierarchy[uti]
-                parent_uti = hierarchy[1] if len(hierarchy) > 1 else hierarchy[0]
-                utis.add(parent_uti)
+            if uti:
+                hierarchy = content_type_tree_for_uti(uti)
+                if hierarchy:
+                    parent_uti = hierarchy[1] if len(hierarchy) > 1 else hierarchy[0]
+                    utis.add(parent_uti)
         # Add UTI predicates
         if utis:
             uti_predicates = []
