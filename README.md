@@ -17,7 +17,7 @@ A prototype system that brings natural language search capabilities to your file
 
 ## Overview
 
-![usage gif](inference.gif)
+![usage gif](src/inference.gif)
 
 > shows zero results because i don't have any videos related to "wedding"
 This system combines:

@@ -2,29 +2,15 @@
 from langextract_query_gen import QueryExtractor
 from Foundation import NSMetadataQuery, NSPredicate, NSCompoundPredicate, NSRunLoop, NSDate
 from datetime import datetime, timedelta
+from utitools import uti_for_suffix
+import json
 
 class FileSearchParser:
-    HIERARCHIES = {
-        'public.image': ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'tif', 'svg', 'webp', 'ico', 'heic'],
-        'public.movie': ['mp4', 'avi', 'mov', 'mkv', 'wmv', 'flv', 'webm', 'm4v', 'mpg', 'mpeg'],
-        'public.audio': ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a', 'opus', 'aiff'],
-        'public.source-code': ['py', 'js', 'ts', 'cpp', 'c', 'java', 'go', 'rs', 'rb', 'php', 'swift', 'ipynb'],
-        'public.text': ['txt', 'md', 'markdown', 'rst', 'log', 'rtf'],
-        'com.adobe.pdf': ['pdf'],
-        'public.archive': ['zip', 'tar', 'gz', 'rar', '7z', 'bz2'],
-        'public.html': ['html', 'htm', 'xhtml'],
-        'public.spreadsheet': ['xls', 'xlsx', 'ods', 'csv'],
-        'public.presentation': ['ppt', 'pptx', 'odp'],
-        'com.microsoft.word.doc': ['doc', 'docx']
-        # current prototype contains these filetypes only just for testing.
-    }
     
     def __init__(self):
         self.extractor = QueryExtractor()
-        self.ext_to_uti = {}
-        for uti, extensions in self.HIERARCHIES.items():
-            for ext in extensions:
-                self.ext_to_uti[ext.lower()] = uti
+        with open('uti_tree.json', 'r') as f:
+            self.uti_hierarchy = json.load(f)
     
     def calculate_date_predicate(self, temporal_data):
         """Convert temporal data to date predicate (placeholder for now)"""
@@ -51,10 +37,11 @@ class FileSearchParser:
         # Convert file types to UTIs and add predicates
         utis = set()
         for ft in parsed['file_types']:
-            uti = self.ext_to_uti.get(ft.lower())
-            if uti:
-                utis.add(uti)
-        
+            uti = uti_for_suffix(ft.lower())
+            if uti and uti in self.uti_hierarchy:
+                hierarchy = self.uti_hierarchy[uti]
+                parent_uti = hierarchy[1] if len(hierarchy) > 1 else hierarchy[0]
+                utis.add(parent_uti)
         # Add UTI predicates
         if utis:
             uti_predicates = []
