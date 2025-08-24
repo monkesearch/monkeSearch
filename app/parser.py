@@ -9,14 +9,40 @@ class FileSearchParser:
         self.extractor = QueryExtractor()
     
     def calculate_date_predicate(self, temporal_data):
-        """Convert temporal data to date predicate (placeholder for now)"""
+        """Convert temporal data to date predicate - all time ranges are relative"""
         if not temporal_data:
             return None
             
         for temp in temporal_data:
-            if temp['time_unit'] == 'days':
-                days = int(temp['value'])
-                date = datetime.now() - timedelta(days=days)
+            time_unit = temp['time_unit']
+            value = int(temp['value'])
+            
+            # Handle different time units - all relative from current date
+            if time_unit == 'days':
+                date = datetime.now() - timedelta(days=value)
+                return NSPredicate.predicateWithFormat_(
+                    "kMDItemFSContentChangeDate > %@", 
+                    date
+                )
+            
+            elif time_unit == 'weeks':
+                date = datetime.now() - timedelta(weeks=value)
+                return NSPredicate.predicateWithFormat_(
+                    "kMDItemFSContentChangeDate > %@", 
+                    date
+                )
+            
+            elif time_unit == 'months':
+                # Approximate months as 30 days each
+                date = datetime.now() - timedelta(days=value * 30)
+                return NSPredicate.predicateWithFormat_(
+                    "kMDItemFSContentChangeDate > %@", 
+                    date
+                )
+            
+            elif time_unit == 'years':
+                # Use 365 days per year approximation
+                date = datetime.now() - timedelta(days=value * 365)
                 return NSPredicate.predicateWithFormat_(
                     "kMDItemFSContentChangeDate > %@", 
                     date
