@@ -1,6 +1,8 @@
 # Technical Documentation
 
-Deep dive into MonkeSearch's architecture, implementation details, and the roadmap for making file search smarter.
+Deep dive into MonkeSearch's architecture, implementation details, and the roadmap for making file search smarter.  
+
+<br>
 <img width="3985" height="2929" alt="image" src="https://github.com/user-attachments/assets/1393fc1d-52e0-4a3e-9825-0d9b924c8e19" />
 
 
