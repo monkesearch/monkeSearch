@@ -95,6 +95,7 @@ python parser.py "python files from yesterday"
 
 ### Command Line
 ```bash
+cd app/
 # Basic search
 python parser.py "photos from last week"
 
