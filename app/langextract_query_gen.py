@@ -11,6 +11,9 @@ class QueryExtractor:
             Extract two types of information from search queries:
             FILE TYPE INDICATORS
                 REFRAIN FROM giving unrelated filetypes, but give all which can be directly relevant.
+                Include a 'specific' flag: true if user wants ONLY that exact file type (only if the filetype is written in words or it's extension), false for broad categories.
+                Set specific=true when user needs a really specific filetype: "python files", "pdf documents", "excel sheets", "mp4 files"
+                Set specific=false for general categories: "images", "documents", "media files", "code", these do not contain specific filetypes
                
             TEMPORAL INDICATORS: Time-related expressions with SPECIFIC values only.
                STRICT RULES:
@@ -35,7 +38,7 @@ class QueryExtractor:
                     lx.data.Extraction(
                         extraction_class="file_type_indicator",
                         extraction_text="python scripts",
-                        attributes={"probable_extensions": "py, ipynb"}
+                        attributes={"probable_extensions": "py, ipynb", "specific": "true"}
                     ),
                     lx.data.Extraction(
                         extraction_class="temporal_indicator",
@@ -50,7 +53,7 @@ class QueryExtractor:
                     lx.data.Extraction(
                         extraction_class="file_type_indicator",
                         extraction_text="music files",
-                        attributes={"probable_extensions": "mp3, flac, m4a, wav"}
+                        attributes={"probable_extensions": "mp3, flac, m4a, wav", "specific": "false"}
                     ),
                 ]
             ),
@@ -60,7 +63,7 @@ class QueryExtractor:
                     lx.data.Extraction(
                         extraction_class="file_type_indicator",
                         extraction_text="photos",
-                        attributes={"probable_extensions": "jpg, jpeg, png, heic"}
+                        attributes={"probable_extensions": "jpg, jpeg, png, heic", "specific": "false"}
                     ),
                     lx.data.Extraction(
                         extraction_class="temporal_indicator",
@@ -75,12 +78,12 @@ class QueryExtractor:
                     lx.data.Extraction(
                         extraction_class="file_type_indicator",
                         extraction_text="pdf",
-                        attributes={"probable_extensions": "pdf"}
+                        attributes={"probable_extensions": "pdf", "specific": "true"}
                     ),
                     lx.data.Extraction(
                         extraction_class="file_type_indicator",
                         extraction_text="invoices",
-                        attributes={"probable_extensions": "pdf, xlsx"}
+                        attributes={"probable_extensions": "pdf, xlsx", "specific": "false"}
                     ),
                     lx.data.Extraction(
                         extraction_class="temporal_indicator",
@@ -95,12 +98,32 @@ class QueryExtractor:
                     lx.data.Extraction(
                         extraction_class="file_type_indicator",
                         extraction_text="resume",
-                        attributes={"probable_extensions": "pdf, docx, doc"}
+                        attributes={"probable_extensions": "pdf, docx, doc", "specific": "false"}
                     ),
                     lx.data.Extraction(
                         extraction_class="temporal_indicator",
                         extraction_text="last week",
                         attributes={"time_unit": "weeks", "value": "1"}
+                    ),
+                ]
+            ),
+            lx.data.ExampleData(
+                text="mp4 files",
+                extractions=[
+                    lx.data.Extraction(
+                        extraction_class="file_type_indicator",
+                        extraction_text="mp4",
+                        attributes={"probable_extensions": "mp4", "specific": "true"}
+                    ),
+                ]
+            ),
+            lx.data.ExampleData(
+                text="java files",
+                extractions=[
+                    lx.data.Extraction(
+                        extraction_class="file_type_indicator",
+                        extraction_text="java files",
+                        attributes={"probable_extensions": "java", "specific": "true"}
                     ),
                 ]
             )
@@ -176,6 +199,7 @@ class QueryExtractor:
         file_types = []
         temporal_data = []
         all_extracted_text = []
+        is_specific = False
         
         if result and result.extractions:
             for extraction in result.extractions:
@@ -183,6 +207,8 @@ class QueryExtractor:
                     extensions = extraction.attributes.get("probable_extensions", "")
                     file_types.extend([ext.strip() for ext in extensions.split(",")])
                     all_extracted_text.append(extraction.extraction_text)
+                    if extraction.attributes.get("specific", "false") == "true":
+                        is_specific = True
                     
                 elif extraction.extraction_class == "temporal_indicator":
                     temporal_data.append({
@@ -207,11 +233,11 @@ class QueryExtractor:
             "file_types": file_types,
             "temporal": temporal_data,
             "misc_keywords": misc_keywords,
+            "is_specific": is_specific,
             "original_query": query # original query with stop words, just for reference
         }
 
 
-# CLI usage if run directly
 if __name__ == "__main__":
     import argparse
     
@@ -225,3 +251,4 @@ if __name__ == "__main__":
     print(f"File types: {parsed['file_types']}")
     print(f"Temporal: {parsed['temporal']}")
     print(f"Misc keywords: {parsed['misc_keywords']}")
+    print(f"Is specific: {parsed['is_specific']}")

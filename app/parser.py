@@ -61,11 +61,16 @@ class FileSearchParser:
         for ft in parsed['file_types']:
             uti = uti_for_suffix(ft.lower())
             if uti:
-                hierarchy = content_type_tree_for_uti(uti)
-                if hierarchy:
-                    parent_uti = hierarchy[1] if len(hierarchy) > 1 else hierarchy[0]
-                    utis.add(parent_uti)
-        # Add UTI predicates
+                if parsed['is_specific']:
+                    # Don't climb hierarchy for specific requests
+                    utis.add(uti)
+                else:
+                    # Climb hierarchy for broad categories
+                    hierarchy = content_type_tree_for_uti(uti)
+                    if hierarchy:
+                        parent_uti = hierarchy[1] if len(hierarchy) > 1 else hierarchy[0]
+                        utis.add(parent_uti)
+        
         if utis:
             uti_predicates = []
             for uti in utis:
@@ -86,7 +91,6 @@ class FileSearchParser:
             )
             predicates.append(keyword_pred)
         
-        # Add temporal predicate (basic for now)
         if parsed['temporal']:
             date_pred = self.calculate_date_predicate(parsed['temporal'])
             if date_pred:
@@ -104,14 +108,13 @@ class FileSearchParser:
         else:
             final_predicate = NSCompoundPredicate.andPredicateWithSubpredicates_(predicates)
         
-        # Execute query
         query = NSMetadataQuery.alloc().init()
         query.setPredicate_(final_predicate)
         query.setSearchScopes_(["/"])
         
         query.startQuery()
         
-        # Wait for results
+        # Wait for results (3 secs)
         run_loop = NSRunLoop.currentRunLoop()
         timeout = NSDate.dateWithTimeIntervalSinceNow_(3.0)
         
@@ -148,6 +151,7 @@ if __name__ == "__main__":
         print(f"  File types: {parsed_data['file_types']}")
         print(f"  Temporal: {parsed_data['temporal']}")
         print(f"  Misc keywords: {parsed_data['misc_keywords']}")
+        print(f"  Is specific: {parsed_data['is_specific']}")
         
         print(f"\nFound {len(results)} results:")
         for path in results[:10]:  # Show first 10
