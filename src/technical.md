@@ -11,6 +11,7 @@ Deep dive into MonkeSearch's architecture, implementation details, and the roadm
 ### 1. Query Parsing
 Your natural language query is analyzed by Qwen (0.6b) running locally via Ollama to extract:
 - **File type indicators**: "photos" → jpg, jpeg, png, heic
+  - **Specificity flag**: Determines if exact file type matching is required
 - **Temporal expressions**: "last week" → 7 days, "3 weeks ago" → 21 days
 - **Residual keywords**: Remaining meaningful terms after extraction
 
@@ -22,13 +23,26 @@ STOP_WORDS = {'in', 'at', 'of', 'by', 'as', 'me', 'the', 'a', 'an',
               'ago', 'back', 'past', 'earlier', 'folder'}
 ```
 
-### 3. Predicate Building
+### 3. File Type Specificity Detection
+The system intelligently determines whether you want exact file types or broader categories:
+- **Specific type (`is_specific=true`)**: When you mention exact file types
+  - "python files" → only .py files
+  - "pdf documents" → only .pdf files
+  - "excel sheets" → only .xlsx files
+- **Broad type (`is_specific=false`)**: When you mention general categories
+  - "images" → all image types (jpg, png, heic, etc.)
+  - "documents" → all document types
+  - "code" → all source code files
+
+### 4. Predicate Building
 Extracted information is converted to macOS Spotlight search predicates:
 - File types map to Uniform Type Identifiers (UTIs) using `utitools`
+  - **When `is_specific=true`**: Uses exact UTI without hierarchy climbing
+  - **When `is_specific=false`**: Climbs UTI hierarchy to include related types
 - Time expressions become `kMDItemFSContentChangeDate` comparisons
 - Keywords search both `kMDItemTextContent` and `kMDItemFSName`
 
-### 4. Spotlight Search
+### 5. Spotlight Search
 macOS's native search engine queries the indexed metadata:
 - Searches complete in milliseconds
 - No directory scanning required
@@ -76,7 +90,7 @@ Based on the roadmap, these features are planned ( contributions are very welcom
 ### Enhanced Query Understanding (major upgrade)
 - [ ] Fuzzy matching for keywords
 - [ ] Semantic tag extraction and indexing
-- [ ] Prioritizing a specific filetype if it's included in the prompt. (If someone searches for python files, show only python files instead of stepping up in the UTI hierarchy and showing all the `public.shell-script` files.)
+- [x] ✅ Implemented via is_specific flag: Prioritizing a specific filetype if it's included in the prompt. (If someone searches for python files, show only python files instead of stepping up in the UTI hierarchy and showing all the `public.shell-script` files.)
 
 ### Additional Metadata
 - [ ] Source identification (files from Google Drive, downloads, etc.)
@@ -98,11 +112,11 @@ User Query (Natural Language)
         ↓
 QueryExtractor (LangExtract + Qwen 0.6b)
         ↓
-Structured Data {file_types, temporal, keywords}
+Structured Data {file_types, temporal, keywords, is_specific}
         ↓
 FileSearchParser (PyObjC + Foundation)
         ↓
-NSPredicate Objects
+NSPredicate Objects (with UTI hierarchy control)
         ↓
 NSMetadataQuery (Spotlight)
         ↓
@@ -110,6 +124,21 @@ File Paths Results
 ```
 
 ## Current Capabilities
+
+### File Type Specificity Control
+The system now intelligently determines search scope based on query phrasing:
+
+**Specific File Type Searches** (`is_specific=true`):
+- Query: "python files from last week"
+  - Returns: Only .py files, not other script types
+- Query: "pdf invoices"
+  - Returns: Only PDF files, not other document types
+
+**Broad Category Searches** (`is_specific=false`):
+- Query: "images from yesterday"
+  - Returns: All image types (jpg, png, heic, etc.)
+- Query: "documents about taxes"
+  - Returns: PDFs, Word docs, spreadsheets, etc.
 
 ### Supported Time Units
 - **Days**: "3 days ago"
@@ -119,11 +148,21 @@ File Paths Results
 
 ### File Type Recognition
 The system recognizes common file type descriptions and maps them to extensions:
-- "photos" → jpg, jpeg, png, heic
-- "python scripts" → py, ipynb
-- "music files" → mp3, flac, m4a, wav
-- "pdf", "invoices" → pdf, xlsx
-- "resume" → pdf, docx, doc
+- "photos" → jpg, jpeg, png, heic (broad search)
+- "python scripts" → py, ipynb (specific search)
+- "music files" → mp3, flac, m4a, wav (broad search)
+- "pdf", "invoices" → pdf, xlsx (context-dependent)
+- "resume" → pdf, docx, doc (broad search)
+
+### UTI Hierarchy Navigation
+When `is_specific=false`, the system climbs the Uniform Type Identifier hierarchy:
+- Searching for "images" includes all `public.image` subtypes
+- Searching for "code" includes all `public.source-code` subtypes
+- Searching for "documents" includes all `public.content` text types
+
+When `is_specific=true`, the system uses exact UTI matching:
+- "python files" searches only for `public.python-script`
+- "mp4 files" searches only for `public.mpeg-4`
 
 
 ## Limitations
