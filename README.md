@@ -142,6 +142,8 @@ Apache-2.0 license
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=monkesearch/monkeSearch&type=Date" />
  </picture>
 </a>
+
+
 ## Acknowledgments
 - Big thanks to [utitools](https://github.com/RhetTbull/utitools)
 - Built with [LangExtract](https://github.com/google/langextract) for structured extraction
