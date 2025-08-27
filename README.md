@@ -131,6 +131,17 @@ for path in results:
 
 Apache-2.0 license
 
+
+
+## Star History
+
+<a href="https://www.star-history.com/#monkesearch/monkeSearch&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=monkesearch/monkeSearch&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=monkesearch/monkeSearch&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=monkesearch/monkeSearch&type=Date" />
+ </picture>
+</a>
 ## Acknowledgments
 - Big thanks to [utitools](https://github.com/RhetTbull/utitools)
 - Built with [LangExtract](https://github.com/google/langextract) for structured extraction
