@@ -79,6 +79,7 @@ Based on the roadmap, these features are planned ( contributions are very welcom
 - [ ] GUI interface
 - [ ] Performance optimizations
 - [ ] Configurable result limits
+- [ ] Llama-cpp-python inference support
 
 ### Advanced Temporal Processing (major upgrade)
 - [ ] Temporal approximators ("around 3 weeks", "about 2 months")
