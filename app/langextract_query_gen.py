@@ -3,57 +3,42 @@ import langextract as lx
 import textwrap
 
 class QueryExtractor:
-    def __init__(self, model_id="qwen3:0.6b", model_url="http://localhost:11434"):
-        self.model_id = model_id
-        self.model_url = model_url
-        
+    def __init__(self, model_id="file:Qwen3-0.6B-Q4_K_M.gguf"):
+        self.config = lx.factory.ModelConfig(
+            model_id=model_id,
+            provider="LlamaCppLanguageModel",
+            provider_kwargs=dict(
+                n_gpu_layers=-1,
+                n_ctx=0,
+                verbose=True,
+                
+            ),
+        )
+        # Shortened prompt
         self.prompt = textwrap.dedent("""\
-            Extract two types of information from search queries:
-            FILE TYPE INDICATORS
-                REFRAIN FROM giving unrelated filetypes, but give all which can be directly relevant.
-                Include a 'specific' flag: true if user wants ONLY that exact file type (only if the filetype is written in words or it's extension), false for broad categories.
-                Set specific=true when user needs a really specific filetype: "python files", "pdf documents", "excel sheets", "mp4 files"
-                Set specific=false for general categories: "images", "documents", "media files", "code", these do not contain specific filetypes
-               
-            TEMPORAL INDICATORS: Time-related expressions with SPECIFIC values only.
-               STRICT RULES:
-                Only extract when there is an EXPLICIT numeric value or specific time reference
-                Assume all time references are from the past (looking backward in time)
-                DO NOT extract vague or approximate terms
-                DO NOT extract future references
-               When extracting, provide two attributes:
-                time_unit: The unit of time (days, weeks, months, years, hours, minutes, seconds)
-                value: ONLY provide numeric values that are explicitly stated.
-               
-            DO NOT extract temporal indicators for:
-            - Vague approximations: "few", "several", "many", "couple"
-            - Any term without a specific numeric value or clear time reference
+                                      /no_think
+            Extract from search queries:
             
-            Use exact text from the query for extraction_text.""")
+            FILE TYPES: Include extensions and set specific=true for exact types (pdf, mp4), false for categories (images, documents).
+            
+            TEMPORAL: Only extract explicit numeric values from the past.
+            - time_unit: days, weeks, months, years
+            - value: numeric only""")
         
+        # Reduced examples to fit context
         self.examples = [
             lx.data.ExampleData(
-                text="python scripts from three days ago",
+                text="python scripts from 3 days ago",
                 extractions=[
                     lx.data.Extraction(
                         extraction_class="file_type_indicator",
                         extraction_text="python scripts",
-                        attributes={"probable_extensions": "py, ipynb", "specific": "true"}
+                        attributes={"probable_extensions": "py", "specific": "true"}
                     ),
                     lx.data.Extraction(
                         extraction_class="temporal_indicator",
-                        extraction_text="three days ago",
+                        extraction_text="3 days ago",
                         attributes={"time_unit": "days", "value": "3"}
-                    ),
-                ]
-            ),
-            lx.data.ExampleData(
-                text="old music files",
-                extractions=[
-                    lx.data.Extraction(
-                        extraction_class="file_type_indicator",
-                        extraction_text="music files",
-                        attributes={"probable_extensions": "mp3, flac, m4a, wav", "specific": "false"}
                     ),
                 ]
             ),
@@ -63,7 +48,7 @@ class QueryExtractor:
                     lx.data.Extraction(
                         extraction_class="file_type_indicator",
                         extraction_text="photos",
-                        attributes={"probable_extensions": "jpg, jpeg, png, heic", "specific": "false"}
+                        attributes={"probable_extensions": "jpg,png", "specific": "false"}
                     ),
                     lx.data.Extraction(
                         extraction_class="temporal_indicator",
@@ -73,57 +58,12 @@ class QueryExtractor:
                 ]
             ),
             lx.data.ExampleData(
-                text="pdf invoices from 2023",
+                text="pdf files",
                 extractions=[
                     lx.data.Extraction(
                         extraction_class="file_type_indicator",
                         extraction_text="pdf",
                         attributes={"probable_extensions": "pdf", "specific": "true"}
-                    ),
-                    lx.data.Extraction(
-                        extraction_class="file_type_indicator",
-                        extraction_text="invoices",
-                        attributes={"probable_extensions": "pdf, xlsx", "specific": "false"}
-                    ),
-                    lx.data.Extraction(
-                        extraction_class="temporal_indicator",
-                        extraction_text="2023",
-                        attributes={"time_unit": "years", "value": "2023"}
-                    ),
-                ]
-            ),
-            lx.data.ExampleData(
-                text="resume from last week",
-                extractions=[
-                    lx.data.Extraction(
-                        extraction_class="file_type_indicator",
-                        extraction_text="resume",
-                        attributes={"probable_extensions": "pdf, docx, doc", "specific": "false"}
-                    ),
-                    lx.data.Extraction(
-                        extraction_class="temporal_indicator",
-                        extraction_text="last week",
-                        attributes={"time_unit": "weeks", "value": "1"}
-                    ),
-                ]
-            ),
-            lx.data.ExampleData(
-                text="mp4 files",
-                extractions=[
-                    lx.data.Extraction(
-                        extraction_class="file_type_indicator",
-                        extraction_text="mp4",
-                        attributes={"probable_extensions": "mp4", "specific": "true"}
-                    ),
-                ]
-            ),
-            lx.data.ExampleData(
-                text="java files",
-                extractions=[
-                    lx.data.Extraction(
-                        extraction_class="file_type_indicator",
-                        extraction_text="java files",
-                        attributes={"probable_extensions": "java", "specific": "true"}
                     ),
                 ]
             )
@@ -132,16 +72,15 @@ class QueryExtractor:
     def extract(self, query):
         """Extract file types and temporal indicators from query"""
         result = lx.extract(
+            config=self.config,
             text_or_documents=query,
             prompt_description=self.prompt,
             examples=self.examples,
-            model_id=self.model_id,
-            model_url=self.model_url,
             fence_output=False,
             use_schema_constraints=False,
-            max_char_buffer=100,
+            max_char_buffer=50,  # Reduced buffer
             extraction_passes=1,
-            max_workers=2,
+            max_workers=1,  # Reduced workers
         )
         
         return result
@@ -182,14 +121,8 @@ class QueryExtractor:
     def parse_query(self, query):
         """Parse query and return structured data"""
         
-        # stop words which will be removed right away, before LLM even gets it.
-        STOP_WORDS = {
-            'in', 'at', 'of', 'by', 'as', 'me',
-            'the', 'a', 'an', 'and', 'any',
-            'find', 'search', 'list', 'file', 'files',
-            'ago', 'back',
-            'past', 'earlier', 'folder'
-        }
+        # Simplified stop words
+        STOP_WORDS = {'the', 'a', 'an', 'find', 'search', 'file', 'files'}
         words = query.split()
         filtered_words = [word for word in words if word.lower() not in STOP_WORDS]
         cleaned_query = " ".join(filtered_words)
@@ -223,7 +156,6 @@ class QueryExtractor:
         for text in all_extracted_text:
             misc_keywords = misc_keywords.replace(text, "").strip()
         
-        # Filter out words with 2 or fewer characters
         if misc_keywords:
             words = misc_keywords.split()
             filtered_words = [word for word in words if len(word) > 2]
@@ -234,7 +166,7 @@ class QueryExtractor:
             "temporal": temporal_data,
             "misc_keywords": misc_keywords,
             "is_specific": is_specific,
-            "original_query": query # original query with stop words, just for reference
+            "original_query": query
         }
 
 
