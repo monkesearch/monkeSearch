@@ -46,10 +46,21 @@ class FileSearchParser:
     def search(self, query_text, max_results=20):
         """Parse query and execute search"""
         # Extract components using LangExtract
-        parsed = json.loads(self.extractor.llm_query_gen(query_text))
-
+        # stop words which will be removed right away, before LLM even gets it.
+        STOP_WORDS = {
+            'in', 'at', 'of', 'by', 'as', 'me',
+            'the', 'a', 'an', 'and', 'any',
+            'find', 'search', 'list', 'file', 'files',
+            'ago', 'back',
+            'past', 'earlier', 'folder'
+        }
+        words = query_text.split()
+        filtered_words = [word for word in words if word.lower() not in STOP_WORDS]
+        cleaned_query = " ".join(filtered_words)
+        parsed = json.loads(self.extractor.llm_query_gen(cleaned_query))
         predicates = []
-
+        misc_keywords = []
+        
         # Convert file types to UTIs and add predicates
         utis = set()
         for ft in parsed['file_types']:
@@ -79,11 +90,11 @@ class FileSearchParser:
                 predicates.append(uti_predicates[0])
 
         # Add misc keywords predicate
-        if parsed['misc_keywords']:
+        if misc_keywords:
             keyword_pred = NSPredicate.predicateWithFormat_(
                 "kMDItemTextContent CONTAINS[cd] %@ OR kMDItemFSName CONTAINS[cd] %@",
-                parsed['misc_keywords'],
-                parsed['misc_keywords']
+                misc_keywords,
+                misc_keywords
             )
             predicates.append(keyword_pred)
 
