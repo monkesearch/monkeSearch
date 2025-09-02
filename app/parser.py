@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from langextract_query_gen import QueryExtractor
+from query_gen import QueryExtractor
 from Foundation import NSMetadataQuery, NSPredicate, NSCompoundPredicate, NSRunLoop, NSDate
 from datetime import datetime, timedelta
 from utitools import uti_for_suffix, content_type_tree_for_uti

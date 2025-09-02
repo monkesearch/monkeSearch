@@ -20,23 +20,29 @@ class QueryResponse(BaseModel):
 class QueryExtractor:
     def llm_query_gen(self, query_text, model_instance=llama):
         response = model_instance.create_chat_completion(
-            # no_think for qwen model only
             messages=[
                 {
                     "role": "system",
                     "content": textwrap.dedent("""\
                         /no_think
-                        Extract file search information from queries.
-                        FILE TYPES: Extract relevant file extensions. Set is_specific=true for exact types like "python files", "pdf documents", "pdfs" if the user query has it. Set is_specific=false for broad categories like "images", "documents".
-                        REFRAIN FROM giving unrelated filetypes, but give all which can be directly relevant.
-                        Include a 'specific' flag: true if user wants ONLY that exact file type for broad categories.
-                        Set specific=true when user needs a really specific filetype: "python files", "pdf documents", "excel sheets", "mp4 files"
-                        Set specific=false for general categories: "images", "documents", "media files", "code", these do not contain specific filetypes. 
-                        TEMPORAL: Extract only explicit time references. Use empty strings if no temporal info found.
-                        SOURCE_TEXT: Track the exact words from the query that were used to infer each field.
-                        EXAMPLES:
-                        "python scripts 3 days" - file_types: ["py", "ipynb"], time_unit: "days", time_unit_value: "3", is_specific: true, source_text: {"file_types": "python", "time_unit": "days", "time_unit_value": "3"}
-                        Respond only with JSON."""),
+                        Extract file search information. Answer each field:
+                        
+                        file_types: List file extensions that match the query
+                        
+                        is_specific: Answer TRUE or FALSE
+                        - TRUE if query mentions exact file type: "python", "pdf", "excel", "mp4", "java"
+                        - FALSE if query mentions category: "images", "documents", "media", "code"
+                        
+                        Examples:
+                        "python scripts" → file_types: ["py"], is_specific: true
+                        "pdf" → file_types: ["pdf"], is_specific: true  
+                        "images" → file_types: ["jpg","png"], is_specific: false
+                        "documents" → file_types: ["pdf","docx"], is_specific: false
+                        
+                        time_unit/time_unit_value: Extract if present, else empty string
+                        source_text: Track exact words used
+                        
+                        JSON only."""),
                 },
                 {"role": "user", "content": f"{query_text}"},
             ],
