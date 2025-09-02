@@ -65,12 +65,10 @@ class FileSearchParser:
                         utis.add(parent_uti)
 
         if utis:
-            uti_predicates = []
-            for uti in utis:
-                uti_predicates.append(
-                    NSPredicate.predicateWithFormat_(
-                        "kMDItemContentTypeTree CONTAINS %@", uti)
-                )
+            uti_predicates = [
+                NSPredicate.predicateWithFormat_("kMDItemContentTypeTree CONTAINS %@", u)
+                for u in utis
+                ]
             if len(uti_predicates) > 1:
                 predicates.append(
                     NSCompoundPredicate.orPredicateWithSubpredicates_(uti_predicates))
