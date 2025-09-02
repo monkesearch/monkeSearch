@@ -98,8 +98,6 @@ class FileSearchParser:
                         parent_uti = hierarchy[1] if len(
                             hierarchy) > 1 else hierarchy[0]
                         utis.add(parent_uti)
-                        print(f'--------{parent_uti}')
-
         if utis:
             uti_predicates = [
                 NSPredicate.predicateWithFormat_("kMDItemContentTypeTree CONTAINS %@", u)
