@@ -19,7 +19,7 @@ A prototype system that brings natural language search capabilities to your file
 
 ![usage gif](src/inference.gif)
 
-> shows zero results because i don't have any videos related to "wedding" 
+> shows zero results because i don't have any videos related to "party" 
 
 
 This system combines:
