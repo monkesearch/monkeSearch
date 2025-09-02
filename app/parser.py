@@ -43,6 +43,23 @@ class FileSearchParser:
             "kMDItemFSContentChangeDate > %@", date
         )
 
+    def extract_misc_keywords(self, cleaned_query, parsed_data):
+            """Extract remaining keywords after subtracting LLM-captured source text"""
+            # Convert cleaned query to lowercase words
+            query_words = set(word.lower() for word in cleaned_query.split())
+            
+            # Extract all source text words from LLM output
+            source_text_words = set()
+            if 'source_text' in parsed_data:
+                for field_value in parsed_data['source_text'].values():
+                    if field_value:
+                        source_text_words.update(word.lower() for word in field_value.split())
+            
+            # Subtract captured words from cleaned query
+            remaining_words = query_words - source_text_words
+            
+            return list(remaining_words)
+
     def search(self, query_text, max_results=20):
         """Parse query and execute search"""
         # Extract components using LangExtract
@@ -60,6 +77,9 @@ class FileSearchParser:
         parsed = json.loads(self.extractor.llm_query_gen(cleaned_query))
         predicates = []
         misc_keywords = []
+        
+        # Extract misc keywords from remaining text after LLM parsing
+        misc_keywords = self.extract_misc_keywords(cleaned_query, parsed)
         
         # Convert file types to UTIs and add predicates
         utis = set()
@@ -142,7 +162,7 @@ class FileSearchParser:
             if path:
                 results.append(path)
 
-        return results, parsed
+        return results, parsed, misc_keywords
 
 
 if __name__ == "__main__":
@@ -153,17 +173,15 @@ if __name__ == "__main__":
         query = " ".join(sys.argv[1:])
 
         print(f"Searching for: {query}")
-        results, parsed_data = parser.search(query)
+        results, parsed_data, misc = parser.search(query)
 
         print(f"\nParsed data:")
         print(f"  File types: {parsed_data['file_types']}")
         print(f"  Time unit: {parsed_data['time_unit']}")
         print(f"  Time unit value: {parsed_data['time_unit_value']}")
-        print(f"  Misc keywords: {parsed_data['misc_keywords']}")
+        print(f"  Misc keywords: {misc}")
         print(f"  Is specific: {parsed_data['is_specific']}")
-
+        print(parsed_data)
         print(f"\nFound {len(results)} results:")
         for path in results[:10]:  # Show first 10
             print(f"  {path}")
-    else:
-        print("Usage: python parser.py <search query>")
