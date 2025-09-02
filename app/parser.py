@@ -64,7 +64,6 @@ class FileSearchParser:
 
     def search(self, query_text, max_results=20):
         """Parse query and execute search"""
-        # Extract components using LangExtract
         # stop words which will be removed right away, before LLM even gets it.
         STOP_WORDS = {
             'in', 'at', 'of', 'by', 'as', 'me',

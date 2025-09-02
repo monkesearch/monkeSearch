@@ -133,7 +133,6 @@ Apache-2.0 license
 
 ## Acknowledgments
 - Big thanks to [utitools](https://github.com/RhetTbull/utitools)
-- Built with [LangExtract](https://github.com/google/langextract) for structured extraction
 - [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) for local LLM inference
 - Uses Apple's Spotlight and Foundation frameworks.
 

@@ -108,7 +108,7 @@ Based on the roadmap, these features are planned ( contributions are very welcom
 ```
 User Query (Natural Language)
         ↓
-QueryExtractor (LangExtract + Qwen 0.6b via llama-cpp-python)
+QueryExtractor (Qwen 0.6b via llama-cpp-python)
         ↓
 Structured Data {file_types, temporal, keywords, is_specific}
         ↓
@@ -188,7 +188,6 @@ This is a domain where I'm exploring the intersection of local LLMs and system s
 ## Technical Stack
 
 - **Python 3.x**: Core implementation
-- **LangExtract**: Structured data extraction from natural language
 - **llama-cpp-python + Qwen 0.6b**: Local LLM for query understanding
 - **PyObjC**: Bridge to macOS Foundation framework
 - **NSMetadataQuery**: Spotlight search API
