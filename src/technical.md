@@ -9,7 +9,7 @@ Deep dive into MonkeSearch's architecture, implementation details, and the roadm
 ## How It Works
 
 ### 1. Query Parsing
-Your natural language query is analyzed by Qwen (0.6b) running locally via Ollama to extract:
+Your natural language query is analyzed by Qwen (0.6b) running locally via llama-cpp-python to extract:
 - **File type indicators**: "photos" → jpg, jpeg, png, heic
   - **Specificity flag**: Determines if exact file type matching is required
 - **Temporal expressions**: "last week" → 7 days, "3 weeks ago" → 21 days
@@ -53,18 +53,15 @@ macOS's native search engine queries the indexed metadata:
 
 ## Troubleshooting
 
-### "Connection refused" error
-- Ensure Ollama is running: `ollama serve`
-- Check if it's accessible: `curl http://localhost:11434`
+### Model loading errors
+- Ensure you have the correct GGUF model file in your project directory
+- Check the model path in your code matches the actual file location
+- See [llama-cpp-python documentation](https://github.com/abetlen/llama-cpp-python) for troubleshooting
 
 ### No results returned
 - Verify Spotlight is enabled: System Settings → Siri & Spotlight → Search Results
 - Check if the location is indexed: Spotlight preferences
 - Try a simpler query first
-
-### Model not found
-- Pull the model: `ollama pull qwen3:0.6b`
-- List available models: `ollama list`
 
 ### PyObjC import errors
 - Ensure you're using Python 3, not Python 2
@@ -79,7 +76,7 @@ Based on the roadmap, these features are planned ( contributions are very welcom
 - [ ] GUI interface
 - [ ] Performance optimizations
 - [ ] Configurable result limits
-- [ ] Llama-cpp-python inference support
+- [x] ✅ Llama-cpp-python inference support
 
 ### Advanced Temporal Processing (major upgrade)
 - [ ] Temporal approximators ("around 3 weeks", "about 2 months")
@@ -111,7 +108,7 @@ Based on the roadmap, these features are planned ( contributions are very welcom
 ```
 User Query (Natural Language)
         ↓
-QueryExtractor (LangExtract + Qwen 0.6b)
+QueryExtractor (LangExtract + Qwen 0.6b via llama-cpp-python)
         ↓
 Structured Data {file_types, temporal, keywords, is_specific}
         ↓
@@ -192,8 +189,7 @@ This is a domain where I'm exploring the intersection of local LLMs and system s
 
 - **Python 3.x**: Core implementation
 - **LangExtract**: Structured data extraction from natural language
-- **Ollama + Qwen 0.6b**: Local LLM for query understanding
+- **llama-cpp-python + Qwen 0.6b**: Local LLM for query understanding
 - **PyObjC**: Bridge to macOS Foundation framework
 - **NSMetadataQuery**: Spotlight search API
 - **UTI Tools**: File type identification
-

@@ -4,7 +4,7 @@ from typing import List
 from pydantic import BaseModel
 
 llama = llama_cpp.Llama(
-    model_path="Qwen3-0.6B-Q8_0.gguf",
+    model_path="Qwen3-0.6B-Q8_0.gguf", # model file downloaded locally for now
     n_gpu_layers=-1,
     n_ctx=1024,
     verbose=False,

@@ -19,9 +19,11 @@ A prototype system that brings natural language search capabilities to your file
 
 ![usage gif](src/inference.gif)
 
-> shows zero results because i don't have any videos related to "wedding"
+> shows zero results because i don't have any videos related to "wedding" 
+
+
 This system combines:
-- **AI-powered query parsing** using a local LLM (Qwen 0.6B) to understand natural language
+- **AI-powered query parsing** using a local LLM (Qwen 0.6B) via llama.cpp to understand natural language
 - **Native macOS Spotlight integration** for fast, efficient file searching. (cross platform support is very welcome for development!)
 - **Intelligent file type recognition** that understands context (e.g., "resume" → PDF/DOCX files)
 - **Temporal expression parsing** for time-based searches. (3 weeks ago, 10 months ago, etc.)
@@ -45,9 +47,9 @@ This system combines:
 
 - **macOS** (required for Spotlight integration)
 - **Python 3.8+**
-- **Ollama running qwen0.6b** (local LLM server)
+- **llama-cpp-python** with Qwen3-0.6B GGUF (local LLM inference)
 
-> Currently planning to fine tune Gemma 3 270M for a smaller and faster model for this use case. Also aiming at using llama.cpp 
+> Currently planning to fine tune Gemma 3 270M for a smaller and faster model for this use case.
 
 ## Installation
 
@@ -64,29 +66,14 @@ cd monkeSearch
 pip install -r requirements.txt
 ```
 
-### 3. Install and Setup Ollama
+### 3. Install and Setup llama-cpp-python
 
-**Using Homebrew:**
-```bash
-# Install Ollama
-brew install ollama
+See the [llama-cpp-python installation guide](https://github.com/abetlen/llama-cpp-python) for detailed instructions.
 
-# Start the Ollama server (keep this running in a separate terminal)
-ollama serve
-
-# In another terminal, pull the Qwen model
-ollama pull qwen3:0.6b
-```
-
-**Alternative installation** (if not using Homebrew):
-- Download Ollama from [ollama.com](https://ollama.com)
-- Follow the installation instructions for macOS
+You'll need to download Qwen3-0.6B GGUF model file and place it in your project directory.
 
 ### 4. Verify Setup
 ```bash
-# Check if Ollama is running
-curl http://localhost:11434/api/tags
-
 # Test the parser
 python parser.py "python files from yesterday"
 ```
@@ -147,9 +134,9 @@ Apache-2.0 license
 ## Acknowledgments
 - Big thanks to [utitools](https://github.com/RhetTbull/utitools)
 - Built with [LangExtract](https://github.com/google/langextract) for structured extraction
-- [Ollama](https://ollama.com) for local LLM inference. 
+- [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) for local LLM inference
 - Uses Apple's Spotlight and Foundation frameworks.
 
 ---
 
-**Note**: This is an experimental prototype created to explore natural language file searching on macOS. It's not production-ready and should be used for experimentation and learning purposes. 
+**Note**: This is an experimental prototype created to explore natural language file searching on macOS. It's not production-ready and should be used for experimentation and learning purposes.
