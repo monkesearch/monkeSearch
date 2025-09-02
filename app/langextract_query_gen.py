@@ -4,7 +4,7 @@ from typing import List
 from pydantic import BaseModel
 
 llama = llama_cpp.Llama(
-    model_path="Qwen3-0.6B-Q4_K_M.gguf",
+    model_path="Qwen3-0.6B-Q8_0.gguf",
     n_gpu_layers=-1,
     n_ctx=1024,
     verbose=False,
@@ -62,7 +62,7 @@ class QueryExtractor:
                     "required": ["file_types", "time_unit", "time_unit_value", "is_specific", "source_text"],
                 },
             },
-            temperature=0.1,
+            temperature=0.7,
         )
         content = response['choices'][0]['message']['content']
         return content

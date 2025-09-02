@@ -44,21 +44,23 @@ class FileSearchParser:
         )
 
     def extract_misc_keywords(self, cleaned_query, parsed_data):
-            """Extract remaining keywords after subtracting LLM-captured source text"""
-            # Convert cleaned query to lowercase words
-            query_words = set(word.lower() for word in cleaned_query.split())
-            
-            # Extract all source text words from LLM output
-            source_text_words = set()
-            if 'source_text' in parsed_data:
-                for field_value in parsed_data['source_text'].values():
-                    if field_value:
-                        source_text_words.update(word.lower() for word in field_value.split())
-            
-            # Subtract captured words from cleaned query
-            remaining_words = query_words - source_text_words
-            
-            return list(remaining_words)
+        """Extract remaining keywords after removing LLM-captured source text chunks"""
+        misc_keywords = cleaned_query
+        
+        # Remove all source text chunks from the cleaned query
+        if 'source_text' in parsed_data:
+            for field_name, field_value in parsed_data['source_text'].items():
+                if field_value and field_value.strip():
+                    misc_keywords = misc_keywords.lower().replace(field_value.strip().lower(), "").strip()
+        misc_keywords = ' '.join(misc_keywords.split())
+        
+        # Filter out words with 2 or fewer characters
+        if misc_keywords:
+            words = misc_keywords.split()
+            filtered_words = [word for word in words if len(word) > 2]
+            misc_keywords = " ".join(filtered_words)
+        
+        return misc_keywords
 
     def search(self, query_text, max_results=20):
         """Parse query and execute search"""
