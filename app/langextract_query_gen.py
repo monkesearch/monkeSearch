@@ -7,7 +7,7 @@ llama = llama_cpp.Llama(
     model_path="Qwen3-0.6B-Q4_K_M.gguf",
     n_gpu_layers=-1,
     n_ctx=1024,
-    verbose=True,
+    verbose=False,
 )
 
 class QueryResponse(BaseModel):
@@ -17,12 +17,15 @@ class QueryResponse(BaseModel):
     misc_keywords: str
     is_specific: bool
 
-def llm_query_gen(query_text, max_result=20):
-    return llama.create_chat_completion(
+
+class QueryExtractor:
+    def llm_query_gen(self, query_text, max_result=20, model_instance=llama):
+        response = model_instance.create_chat_completion(
         messages=[
             {
                 "role": "system",
                 "content": textwrap.dedent("""\
+                    /no_think
                     Extract file search information from queries.
                     
                     FILE TYPES: Extract relevant file extensions. Set is_specific=true for exact types like "python files", "pdf documents". Set is_specific=false for broad categories like "images", "documents".
@@ -52,5 +55,9 @@ def llm_query_gen(query_text, max_result=20):
                 "required": ["file_types", "time_unit", "time_unit_value", "misc_keywords", "is_specific"],
             },
         },
+        
         temperature=0.1,
     )
+        content = response['choices'][0]['message']['content']
+        return content
+    

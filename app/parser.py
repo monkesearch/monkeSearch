@@ -3,6 +3,7 @@ from langextract_query_gen import QueryExtractor
 from Foundation import NSMetadataQuery, NSPredicate, NSCompoundPredicate, NSRunLoop, NSDate
 from datetime import datetime, timedelta
 from utitools import uti_for_suffix, content_type_tree_for_uti
+import json
 class FileSearchParser:
     
     def __init__(self):
@@ -52,12 +53,13 @@ class FileSearchParser:
     def search(self, query_text, max_results=20):
         """Parse query and execute search"""
         # Extract components using LangExtract
-        parsed = self.extractor.parse_query(query_text)
+        parsed = json.loads(self.extractor.llm_query_gen(query_text))
         
         predicates = []
         
         # Convert file types to UTIs and add predicates
         utis = set()
+        print(parsed)
         for ft in parsed['file_types']:
             uti = uti_for_suffix(ft.lower())
             if uti:
@@ -91,7 +93,7 @@ class FileSearchParser:
             )
             predicates.append(keyword_pred)
         
-        if parsed['temporal']:
+        if parsed['time_unit_value']:
             date_pred = self.calculate_date_predicate(parsed['temporal'])
             if date_pred:
                 predicates.append(date_pred)
