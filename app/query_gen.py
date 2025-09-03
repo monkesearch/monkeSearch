@@ -29,34 +29,26 @@ class QueryExtractor:
                     "role": "system",
                     "content": textwrap.dedent("""\
                         /no_think
-                        Extract file search information by identifying ONLY actual file types, not content descriptors.
+                        Extract file search information. Identify ONLY actual file types, not content descriptors.
                         
                         file_type_indicators: Extract ONLY file type/format mentions
-                        Rules:
-                        - File types: extensions (pdf, py, mp4), format names (python, excel), or categories (images, documents)
-                        - NOT file types: content words (report, invoice, resume, photo, script, brief)
+                        - File types: extensions (pdf, py), formats (python, excel), categories (images, documents)
+                        - NOT file types: content words (report, invoice, resume, script, brief)
                         - is_specific: true for exact types/extensions, false for categories
                         
+                        time_unit: ONLY "days", "weeks", "months", "years" (always plural with 's')
+                        time_unit_value: Integer ONLY (1, 2, 3, not "one", "two", "three")
+                        If no time mentioned: both empty strings ""
+                        
                         Examples:
-                        "report pdf" → 
-                        [{text: "pdf", extensions: ["pdf"], is_specific: true}]
+                        "report pdf" - [{text: "pdf", extensions: ["pdf"], is_specific: true}]
+                        "python scripts" - [{text: "python", extensions: ["py"], is_specific: true}]
+                        "photos" - [{text: "photos", extensions: ["jpg","png"], is_specific: false}]
+                        "documents" - [{text: "documents", extensions: ["pdf","docx"], is_specific: false}]
+                        "excel file" - [{text: "excel", extensions: ["xlsx"], is_specific: true}]
+                        "3 weeks ago" - time_unit: "weeks", time_unit_value: "3"
+                        "yesterday" - time_unit: "days", time_unit_value: "1"
                         
-                        "python scripts" →
-                        [{text: "python", extensions: ["py"], is_specific: true}]
-                        
-                        "wedding photos" →
-                        [{text: "photos", extensions: ["jpg","png"], is_specific: false}]
-                        
-                        "invoice documents" →
-                        [{text: "documents", extensions: ["pdf","docx"], is_specific: false}]
-                        
-                        "budget.xlsx excel" →
-                        [{text: "excel", extensions: ["xlsx"], is_specific: true}]
-                        
-                        "images from yesterday" →
-                        [{text: "images", extensions: ["jpg","png"], is_specific: false}]
-                        
-                        time_unit/time_unit_value: Extract if present, else empty string
                         source_text: Track exact words used
                         JSON only."""),
                 },

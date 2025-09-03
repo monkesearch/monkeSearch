@@ -88,6 +88,7 @@ class FileSearchParser:
             file_types.extend(indicator['extensions'])
             if indicator['is_specific']:
                 is_specific = True
+        # adding these two after processing on top level for processing below, can be optimised later.
         parsed['file_types'] = file_types
         parsed['is_specific'] = is_specific
 
@@ -105,7 +106,6 @@ class FileSearchParser:
                 if parsed['is_specific']:
                     # Don't climb hierarchy for specific requests
                     utis.add(uti)
-                    print(f'{utis}-------source----------')
                 else:
                     # Climb hierarchy for broad categories
                     hierarchy = content_type_tree_for_uti(uti)
@@ -113,7 +113,6 @@ class FileSearchParser:
                         parent_uti = hierarchy[1] if len(
                             hierarchy) > 1 else hierarchy[0]
                         utis.add(parent_uti)
-                    print(f'{uti}------parent-----------')
 
         if utis:
             uti_predicates = [
@@ -197,7 +196,7 @@ if __name__ == "__main__":
         print(f"  Time unit: {parsed_data['time_unit']}")
         print(f"  Time unit value: {parsed_data['time_unit_value']}")
         print(f"  Misc keywords: {misc}")
-        print(f"  Is specific: {parsed_data['is_specific']}")
+        print(f"  Is specific: {parsed_data['is_specific']}\n")
         print(parsed_data)
         print(f"\nFound {len(results)} results:")
         for path in results[:10]:  # Show first 10
