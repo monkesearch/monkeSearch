@@ -29,25 +29,32 @@ class QueryExtractor:
                     "role": "system",
                     "content": textwrap.dedent("""\
                         /no_think
-                        Extract file search information by segmenting into multiple file type indicators.
+                        Extract file search information by identifying ONLY actual file types, not content descriptors.
                         
-                        file_type_indicators: Extract EACH file type mention as separate object
-                        For each, provide:
-                        - text: exact words from query
-                        - extensions: probable file extensions
-                        - is_specific: true for exact types ("pdf", "python"), false for categories ("images", "documents")
+                        file_type_indicators: Extract ONLY file type/format mentions
+                        Rules:
+                        - File types: extensions (pdf, py, mp4), format names (python, excel), or categories (images, documents)
+                        - NOT file types: content words (report, invoice, resume, photo, script, brief)
+                        - is_specific: true for exact types/extensions, false for categories
                         
                         Examples:
-                        "pdf invoices" → 
-                        [{text: "pdf", extensions: ["pdf"], is_specific: true},
-                         {text: "invoices", extensions: ["pdf","xlsx"], is_specific: false}]
+                        "report pdf" → 
+                        [{text: "pdf", extensions: ["pdf"], is_specific: true}]
                         
-                        "python scripts from last week" →
-                        [{text: "python scripts", extensions: ["py","ipynb"], is_specific: true}]
+                        "python scripts" →
+                        [{text: "python", extensions: ["py"], is_specific: true}]
                         
-                        "images and documents" →
-                        [{text: "images", extensions: ["jpg","png"], is_specific: false},
-                         {text: "documents", extensions: ["pdf","docx"], is_specific: false}]
+                        "wedding photos" →
+                        [{text: "photos", extensions: ["jpg","png"], is_specific: false}]
+                        
+                        "invoice documents" →
+                        [{text: "documents", extensions: ["pdf","docx"], is_specific: false}]
+                        
+                        "budget.xlsx excel" →
+                        [{text: "excel", extensions: ["xlsx"], is_specific: true}]
+                        
+                        "images from yesterday" →
+                        [{text: "images", extensions: ["jpg","png"], is_specific: false}]
                         
                         time_unit/time_unit_value: Extract if present, else empty string
                         source_text: Track exact words used
