@@ -4,7 +4,7 @@ A prototype system that brings natural language search capabilities to your file
 
 
 > ⚠️ **Prototype**: This is an initial proof-of-concept implementation. Expect rough edges and limited functionality.
-> Currently aimed at macOS but the logic is independent for cross platform adaptations. (In the works!)
+> Currently aimed at macOS but the logic is independent for cross platform adaptations. (In the works!) visit [discussions](https://github.com/monkesearch/monkeSearch/discussions/8)
 
 > ### Developer note:
 > I've been working on this project since long and this idea had many versions. Future plans include finetuning Gemma 3 270M and adding more smart features like temporal expressions and operators + smarter aggregation (See [future plans](src/technical.md) and please help me in implementing them! ).   
