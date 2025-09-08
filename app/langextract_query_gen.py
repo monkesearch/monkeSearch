@@ -3,14 +3,17 @@ import langextract as lx
 import textwrap
 
 class QueryExtractor:
-    def __init__(self, model_id="file:Qwen3-0.6B-Q4_K_M.gguf"):
+    def __init__(self, model_id="local"):
         self.config = lx.factory.ModelConfig(
             model_id=model_id,
-            provider="LlamaCppLanguageModel",
+            provider="OpenAILanguageModel",
             provider_kwargs=dict(
                 n_gpu_layers=-1,
                 n_ctx=0,
                 verbose=True,
+                base_url = "http://localhost:8000/v1/",
+                api_key = 'mandatory',
+                temperature = 0.1
                 
             ),
         )
