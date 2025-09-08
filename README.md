@@ -28,6 +28,15 @@ This system combines:
 - **Intelligent file type recognition** that understands context (e.g., "resume" → PDF/DOCX files)
 - **Temporal expression parsing** for time-based searches. (3 weeks ago, 10 months ago, etc.)
 
+## Implementation versions
+There are multiple implementations in different branches written in achieving the same task, for testing purposes. Rigorous evals and testing will be done before finalizing on a single one for the main release.
+
+- [Initial implementation using LangExtract](https://github.com/monkesearch/monkeSearch/tree/feature/llama-cpp-support) (Both Ollama and local llama cpp server support)
+
+- llama.cpp rewrite to remove dependency on LangExtract (this branch)
+- llama.cpp [feature branch](https://github.com/monkesearch/monkeSearch/tree/feature/chunking) with more detailed response model. Currently being worked upon, and evals are being done. 
+
+
 ## Example Queries
 #### You can convert any natural language query to 3 major constituents: File type, temporal data (time related), and miscellaneous (file name, path etc.) I used this idea as base to build the whole project, and yes it is that simple.
 

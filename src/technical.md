@@ -76,7 +76,7 @@ Based on the roadmap, these features are planned ( contributions are very welcom
 - [ ] GUI interface
 - [ ] Performance optimizations
 - [ ] Configurable result limits
-- [x] ✅ Llama-cpp-python inference support
+- [x] ✅ Llama-cpp-python inference support (achieved in both llama.cpp implementation and LangExtract)
 
 ### Advanced Temporal Processing (major upgrade)
 - [ ] Temporal approximators ("around 3 weeks", "about 2 months")
