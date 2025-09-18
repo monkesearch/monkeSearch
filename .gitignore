@@ -208,3 +208,6 @@ __marimo__/
 *.DS_Store
 *.gguf
 *.json
+LEANN/
+
+demo*
