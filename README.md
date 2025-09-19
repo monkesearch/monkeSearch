@@ -4,7 +4,7 @@
 
 ---
 
-A prototype system that brings semantic search capabilities to your file system using a very low profile vector database, allowing you to search for files using natural language queries with temporal awareness like "documents from last week" or "photos from 3 days ago". Nothing leaves your PC, fully offline with local vector embeddings.
+A prototype system that brings semantic search capabilities to your file system using a very low profile vector database (size in a few KBs / MBs only), allowing you to search for files using natural language queries with temporal awareness like "documents from last week" or "photos from 3 days ago". Nothing leaves your PC, fully offline with local vector embeddings.
 
 > ⚠️ **Prototype**: This is an initial proof-of-concept implementation. Expect rough edges and limited functionality.
 > Currently aimed at macOS but the logic is independent for cross platform adaptations. (In the works!) visit [discussions](https://github.com/monkesearch/monkeSearch/discussions/8)
@@ -65,12 +65,8 @@ cd monkeSearch
 pip install -r requirements.txt
 ```
 
-### 3. Install LEANN
-```bash
-pip install leann
-```
 
-### 4. Build the Index
+### 3. Build the Index
 ```bash
 # First, dump Spotlight metadata
 python spotlight_dump.py 1000  # Dump 1000 files
@@ -82,7 +78,7 @@ python build_index.py spotlight_dump.json
 python build_index.py spotlight_dump.json
 ```
 
-### 5. Verify Setup
+### 4. Verify Setup
 ```bash
 # Test search
 python leann-plus-temporal-search.py "pdf documents 2 weeks ago"
