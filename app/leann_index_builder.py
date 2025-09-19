@@ -10,7 +10,7 @@ def process_json_items(json_file_path):
         items = json.load(f)
     
     INDEX_PATH = str(Path("./").resolve() / "demo.leann")
-    builder = LeannBuilder(backend_name="hnsw")
+    builder = LeannBuilder(backend_name="hnsw", is_recompute=False)
     
     total_items = len(items)
     print(f"Processing {total_items} items...")

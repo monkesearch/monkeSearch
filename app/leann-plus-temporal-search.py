@@ -89,7 +89,7 @@ def search_files(query, top_k=15):
     
     # Single query to vector DB
     searcher = LeannSearcher(INDEX_PATH)
-    results = searcher.search(clean_query if clean_query else query, top_k=top_k)
+    results = searcher.search(clean_query if clean_query else query, top_k=top_k, recompute_embeddings=False)
     
     # Filter by time if time expression found
     if time_matches:
