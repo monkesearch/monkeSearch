@@ -1,178 +1,185 @@
 # Technical Documentation
 
-Deep dive into MonkeSearch's architecture, implementation details, and the roadmap for making file search smarter.  
+Deep dive into MonkeSearch's architecture using LEANN vector database for semantic file search with temporal awareness.
 
 <br>
 <img width="3985" height="2929" alt="image" src="https://github.com/user-attachments/assets/1393fc1d-52e0-4a3e-9825-0d9b924c8e19" />
 
-
 ## How It Works
 
-### 1. Query Parsing
-Your natural language query is analyzed by Qwen (0.6b) running locally via llama-cpp-python to extract:
-- **File type indicators**: "photos" → jpg, jpeg, png, heic
-  - **Specificity flag**: Determines if exact file type matching is required
-- **Temporal expressions**: "last week" → 7 days, "3 weeks ago" → 21 days
-- **Residual keywords**: Remaining meaningful terms after extraction
+### 1. Metadata Extraction
+Spotlight metadata is extracted for each file:
+- **Path**: Full file location
+- **Name**: Filename for display & embedding
+- **Size**: File size in bytes
+- **ContentType**: UTI content type (e.g., public.jpeg)
+- **Kind**: Human-readable type (e.g., "JPEG image")
+- **CreationDate**: File creation timestamp
+- **ContentChangeDate**: Last modification timestamp
 
-### 2. Intelligent Filtering
-Before LLM processing, common stop words are removed:
+### 2. Embedding Generation
+File metadata is converted to semantic embeddings:
+```python
+embedding_text = f"{name} located at {path} and size {size} bytes with content type {content_type} and kind {kind}"
+```
+This text is then embedded using:
+- Sentence transformers (default: `facebook/contriever`)
+- OpenAI embeddings (optional: `text-embedding-3-small`)
+- Ollama embeddings (optional: `nomic-embed-text`)
+
+### 3. LEANN Index Building
+The embeddings can be stored in a LEANN index with two modes:
+- **Recompute mode** : Stores only graph structure, recomputes embeddings during search (97% storage savings)
+- **No-recompute mode**: Stores full embeddings for faster search (more storage, default for monkeSearch)
+
+### 4. Query Processing
+
+#### Temporal Expression Parsing
+Regex-based temporal parser extracts time expressions:
+```python
+pattern = r'(?:(around|about|roughly|approximately)\s+)?(\d+)\s+(hour|day|week|month|year)s?(?:\s+ago)?'
+```
+- Supports fuzzy modifiers ("around", "about")
+- Converts to ISO timestamp ranges
+- Removes stop words before parsing
+
+#### Query Cleaning
+Stop words are removed from temporal parsing:
 ```python
 STOP_WORDS = {'in', 'at', 'of', 'by', 'as', 'me', 'the', 'a', 'an', 
-              'and', 'any', 'find', 'search', 'list', 'file', 'files',
-              'ago', 'back', 'past', 'earlier', 'folder'}
+              'and', 'any', 'find', 'search', 'list', 'ago', 'back',
+              'past', 'earlier'}
 ```
 
-### 3. File Type Specificity Detection
-The system intelligently determines whether you want exact file types or broader categories:
-- **Specific type (`is_specific=true`)**: When you mention exact file types
-  - "python files" → only .py files
-  - "pdf documents" → only .pdf files
-  - "excel sheets" → only .xlsx files
-- **Broad type (`is_specific=false`)**: When you mention general categories
-  - "images" → all image types (jpg, png, heic, etc.)
-  - "documents" → all document types
-  - "code" → all source code files
+### 5. Semantic Search
+LEANN performs graph-based semantic search:
+- Query is embedded using the same model as indexing
+- Graph traversal finds semantically similar files
+- Recomputes embeddings on-the-fly (if in recompute mode)
+- Returns top-k most similar results
 
-### 4. Predicate Building
-Extracted information is converted to macOS Spotlight search predicates:
-- File types map to Uniform Type Identifiers (UTIs) using `utitools`
-  - **When `is_specific=true`**: Uses exact UTI without hierarchy climbing
-  - **When `is_specific=false`**: Climbs UTI hierarchy to include related types
-- Time expressions become `kMDItemFSContentChangeDate` comparisons
-- Keywords search both `kMDItemTextContent` and `kMDItemFSName`
-
-### 5. Spotlight Search
-macOS's native search engine queries the indexed metadata:
-- Searches complete in milliseconds
-- No directory scanning required
-- Respects system indexing preferences
-- Results limited to top 20 by default
-
-
-
-## Troubleshooting
-
-### Model loading errors
-- Ensure you have the correct GGUF model file in your project directory
-- Check the model path in your code matches the actual file location
-- See [llama-cpp-python documentation](https://github.com/abetlen/llama-cpp-python) for troubleshooting
-
-### No results returned
-- Verify Spotlight is enabled: System Settings → Siri & Spotlight → Search Results
-- Check if the location is indexed: Spotlight preferences
-- Try a simpler query first
-
-### PyObjC import errors
-- Ensure you're using Python 3, not Python 2
-- Try: `pip install --upgrade pyobjc`
-- On Apple Silicon Macs, you might need: `pip install --no-cache-dir pyobjc`
-
-## Future Improvements
-
-Based on the roadmap, these features are planned ( contributions are very welcome - I cannot do this all by myself!):
-
-### Core Features
-- [ ] GUI interface
-- [ ] Performance optimizations
-- [ ] Configurable result limits
-- [x] ✅ Llama-cpp-python inference support (achieved in both llama.cpp implementation and LangExtract)
-
-### Advanced Temporal Processing (major upgrade)
-- [ ] Temporal approximators ("around 3 weeks", "about 2 months")
-- [ ] Temporal operators ("before last month", "within 2 days", "since yesterday")
-- [ ] Specific time values ("within 3 hours", "4 months ago")
-- [ ] Date ranges ("between 2 and 3 weeks ago")
-- [ ] Named time references ("this morning", "tonight", "today", "now")
-
-### Enhanced Query Understanding (major upgrade)
-- [ ] Fuzzy matching for keywords
-- [ ] Semantic tag extraction and indexing
-- [x] ✅ Implemented via is_specific flag: Prioritizing a specific filetype if it's included in the prompt. (If someone searches for python files, show only python files instead of stepping up in the UTI hierarchy and showing all the `public.shell-script` files.)
-
-### Additional Metadata
-- [ ] Source identification (files from Google Drive, downloads, etc.)
-- [ ] Author/creator metadata search
-- [ ] Application-specific metadata (which app created the file)
-- [ ] Content-based deep search
-
-### Model Improvements
-- [ ] Model fine-tuning on file search queries (in the process! let's chat and finetune the model together!)
-
-### System Integration
-- [ ] Integration with other search backends beyond Spotlight (cross platform support can be achieved through utitools)
-
+### 6. Temporal Filtering
+If temporal expression found, results are filtered:
+- Compares file dates against extracted time range
+- Supports both creation and modification dates
+- Returns only files within the specified timeframe
 
 ## Architecture
 
 ```
 User Query (Natural Language)
         ↓
-QueryExtractor (Qwen 0.6b via llama-cpp-python)
+Temporal Parser (Regex-based)
         ↓
-Structured Data {file_types, temporal, keywords, is_specific}
+Query Cleaning (Remove time expressions)
         ↓
-FileSearchParser (PyObjC + Foundation)
+Embedding Generation (Sentence Transformers)
         ↓
-NSPredicate Objects (with UTI hierarchy control)
+LEANN Search (Graph-based similarity)
         ↓
-NSMetadataQuery (Spotlight)
+Temporal Filtering (Date metadata)
         ↓
-File Paths Results
+Filtered Results
 ```
+
+## LEANN Configuration
+
+### Build Parameters
+```python
+LeannBuilder(
+    backend_name="hnsw",           # or "diskann" for large datasets
+    is_recompute=False,             # True for relatively slower search (less storage - high compute)
+    is_compact=False,               # Must be False when is_recompute=False
+)
+```
+
+### Search Parameters
+```python
+LeannSearcher.search(
+    query,
+    top_k=15,                     # Number of results
+    recompute_embeddings=False,    # Must match build setting
+)
+```
+
+## Performance Characteristics
+
+### Storage Comparison
+Will be updated after testing
+<!-- - **With recomputation**: ~30Kb for 5k files
+- **Without recomputation**: ~18MB for 5k files
+- **Storage savings**: 93-97% -->
+
+### Search Speed
+Will be updated after testing
+<!-- - **With recomputation**: ~0.8s for semantic search
+- **Without recomputation**: ~0.01s for semantic search
+- **Temporal filtering**: Adds minimal overhead -->
+
+### Memory Usage
+Will be updated after testing
+
+<!-- - Index loading: Minimal (graph structure only)
+- Search time: Proportional to search complexity
+- Embedding cache: Configurable based on available RAM -->
+
+## Troubleshooting
+
+### No results returned
+- Verify Spotlight is enabled: System Settings → Siri & Spotlight → Search Results
+- Check if files are indexed by Spotlight
+- Try broader queries without temporal expressions first
+
+### Slow search performance
+- Use smaller embedding models
+
+### Index build errors
+- Ensure sufficient disk space
+- Check file permissions for index directory
+- Verify embedding model is downloaded/accessible
+
+## Future Improvements
+
+### Core Features
+- [ ] GUI interface for easier usage
+- [ ] Windows/Linux support via alternative indexing
+- [ ] Content-based search (not just metadata)
+- [ ] Smarter algorithms.
+- [ ] Multi Model system with indexing for video/ audio/ images using generated context.
 
 ## Current Capabilities
 
-### File Type Specificity Control
-The system now intelligently determines search scope based on query phrasing:
-
-**Specific File Type Searches** (`is_specific=true`):
-- Query: "python files from last week"
-  - Returns: Only .py files, not other script types
-- Query: "pdf invoices"
-  - Returns: Only PDF files, not other document types
-
-**Broad Category Searches** (`is_specific=false`):
-- Query: "images from yesterday"
-  - Returns: All image types (jpg, png, heic, etc.)
-- Query: "documents about taxes"
-  - Returns: PDFs, Word docs, spreadsheets, etc.
-
-### Supported Time Units
-- **Days**: "3 days ago"
-- **Weeks**: "2 weeks ago"  
+### Temporal Expressions Supported
+- **Days**: "3 days ago", "yesterday"
+- **Weeks**: "2 weeks ago", "last week"
 - **Months**: "4 months ago" (approximated as 30 days)
-- **Years**: "1 year ago"(approximated as 365 days)
+- **Years**: "1 year ago" (approximated as 365 days)
+- **Fuzzy**: "around 3 weeks", "about 2 months" (±20% buffer)
 
-### File Type Recognition
-The system recognizes common file type descriptions and maps them to extensions:
-- "photos" → jpg, jpeg, png, heic (broad search)
-- "python scripts" → py, ipynb (specific search)
-- "music files" → mp3, flac, m4a, wav (broad search)
-- "pdf", "invoices" → pdf, xlsx (context-dependent)
-- "resume" → pdf, docx, doc (broad search)
+### Semantic Understanding
+The system understands context without exact matches:
+- "documents" matches PDFs, Word files, spreadsheets
+- "photos" matches various image formats
+- "presentations" matches PowerPoint, Keynote files
+- "code" matches source code files
 
-### UTI Hierarchy Navigation
-When `is_specific=false`, the system climbs the Uniform Type Identifier hierarchy:
-- Searching for "images" includes all `public.image` subtypes
-- Searching for "code" includes all `public.source-code` subtypes
-- Searching for "documents" includes all `public.content` text types
-
-When `is_specific=true`, the system uses exact UTI matching:
-- "python files" searches only for `public.python-script`
-- "mp4 files" searches only for `public.mpeg-4`
-
+### Metadata Fields Searched
+- File name and path
+- File type and kind
+- Creation and modification dates
+- File size (part of embedding)
 
 ## Limitations
-- **Local Model Limitations**: The 0.6b model may struggle with very complex queries
-- **No Fuzzy Matching**: Exact keyword matching only
-
+- **Metadata only**: Doesn't search file contents
+- **Spotlight dependency**: Requires macOS Spotlight indexing (for now)
+- **Static index**: Requires manual rebuild for new files
+- **Language**: English-focused temporal expressions
 
 ## Contributing
 
-This is a domain where I'm exploring the intersection of local LLMs and system search. Contributions are very appreciated!  
+This project explores the intersection of vector databases and system search. Contributions are very appreciated!
 
- Feel free to:
+Feel free to:
 - Report issues
 - Suggest improvements
 - Submit pull requests
@@ -180,15 +187,15 @@ This is a domain where I'm exploring the intersection of local LLMs and system s
 
 ### Areas needing help:
 - GUI development (SwiftUI/PyQt/Electron)
-- Temporal expression parsing improvements
-- Performance optimization
-- Cross-platform support (Linux/Windows)
-- Documentation and examples
+- Cross-platform file indexing (Windows/Linux)
+- Advanced temporal expression parsing
+- Performance optimizations
 
 ## Technical Stack
 
 - **Python 3.x**: Core implementation
-- **llama-cpp-python + Qwen 0.6b**: Local LLM for query understanding
+- **LEANN**: Graph-based vector database with 97% storage savings
+- **Sentence Transformers**: Embedding generation
 - **PyObjC**: Bridge to macOS Foundation framework
 - **NSMetadataQuery**: Spotlight search API
-- **UTI Tools**: File type identification
+- **Regex**: Temporal expression parsing

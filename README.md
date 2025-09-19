@@ -4,15 +4,14 @@
 
 ---
 
-A prototype system that brings natural language search capabilities to your file system (macOS only for now), allowing you to search for files using everyday language like "python scripts from last week" or "photos from yesterday". Nothing leaves your pc, offline inference and can even run on potato PCs. You don't need a massive GPU rig to run the small model backing the intelligence.
-
+A prototype system that brings semantic search capabilities to your file system using a very low profile vector database, allowing you to search for files using natural language queries with temporal awareness like "documents from last week" or "photos from 3 days ago". Nothing leaves your PC, fully offline with local vector embeddings.
 
 > ⚠️ **Prototype**: This is an initial proof-of-concept implementation. Expect rough edges and limited functionality.
 > Currently aimed at macOS but the logic is independent for cross platform adaptations. (In the works!) visit [discussions](https://github.com/monkesearch/monkeSearch/discussions/8)
 
 > ### Developer note:
-> I've been working on this project since long and this idea had many versions. Future plans include finetuning Gemma 3 270M and adding more smart features like temporal expressions and operators + smarter aggregation (See [future plans](src/technical.md) and please help me in implementing them! ).   
-> The current turnaround time for this tool to recieve a query and give out files is around 1 second and doesn't exceed it, the largest bottleneck is model inference. This is under active
+> I've been working on this project since long and this idea had many versions. The current implementation uses LEANN, a vector database that saves 97% storage compared to traditional solutions. The system builds a semantic index of your files' metadata and enables temporal-aware search through regex parsing.
+> The current turnaround time for this tool to receive a query and return files is sub-second thanks to LEANN's efficient code. This is under active
 > development and any new suggestions + PRs are welcome. My goal for this tool is to be open source, safe and cross platform. So developers experienced in Windows/Linux Indexing are
 > very welcome to collaborate and develop their versions together.
 >
@@ -21,48 +20,37 @@ A prototype system that brings natural language search capabilities to your file
 
 ## Overview
 
-![usage gif](src/inference.gif)
-
-> shows zero results because i don't have any videos related to "party" 
-
 
 This system combines:
-- **AI-powered query parsing** using a local LLM (Qwen 0.6B) via llama.cpp to understand natural language
-- **Native macOS Spotlight integration** for fast, efficient file searching. (cross platform support is very welcome for development!)
-- **Intelligent file type recognition** that understands context (e.g., "resume" → PDF/DOCX files)
-- **Temporal expression parsing** for time-based searches. (3 weeks ago, 10 months ago, etc.)
+- **LEANN vector database** for semantic search with 97% storage savings
+- **Native macOS Spotlight integration** for fast, efficient file metadata extraction
+- **Temporal expression parsing** for time-based searches (3 weeks ago, 10 months ago, etc.)
+- **Semantic similarity matching** using embeddings instead of exact keyword matching
 
 ## Implementation versions
 There are multiple implementations in different branches written in achieving the same task, for testing purposes. Rigorous evals and testing will be done before finalizing on a single one for the main release.
 
-- [Initial implementation using LangExtract](https://github.com/monkesearch/monkeSearch/tree/feature/llama-cpp-support) (Both Ollama and local llama cpp server support)
-- Current main branch implementation focusing on a vector db based semantic search with temporal awareness (implemented via regex). This implementation uses [LEANN](https://github.com/yichuan-w/LEANN) and also is contributed to the LEANN's official repo.
-- llama.cpp rewrite to remove dependency on LangExtract (legacy-main-llm-implementation)
-- llama.cpp [feature branch](https://github.com/monkesearch/monkeSearch/tree/feature/chunking) with more detailed response model.
-
+- [Initial implementation using LangExtract](https://github.com/monkesearch/monkeSearch/tree/feature/llama-cpp-support) (Legacy - LLM based)
+- **Current main branch**: LEANN-based semantic search with temporal awareness via regex parsing
+- llama.cpp rewrite (legacy-main-llm-implementation) - deprecated
+- llama.cpp [feature branch](https://github.com/monkesearch/monkeSearch/tree/feature/chunking) - deprecated but can be considered for testing.
 
 ## Example Queries
-#### You can convert any natural language query to 3 major constituents: File type, temporal data (time related), and miscellaneous (file name, path etc.) I used this idea as base to build the whole project, and yes it is that simple.
-
-
+#### The system performs semantic search on file metadata with temporal filtering, understanding context without exact keyword matching
 
 | Natural Language Query | What It Finds |
 |------------------------|---------------|
-| `"photos from yesterday"` | Image files modified in the last day |
-| `"python scripts from three days ago"` | .py and .ipynb files from 3 days ago |
-| `"old music files"` | Audio files with "old" in name or content |
-| `"pdf invoices from 2023"` | PDF files from 2023 with "invoices" keyword |
-| `"resume from last week"` | Recent DOC/DOCX/PDF files with "resume" |
-| `"code files"` | Source code files of any language |
-
+| `"photos from wedding"` | Image files with name/ path including the keyword wedding (semantic match on "wedding") |
+| `"documents from 3 weeks ago"` | Any document-like files from 3 weeks ago |
+| `"old music files"` | Audio files with temporal context |
+| `"invoices from last month"` | Files semantically similar to "invoices" from last month |
+| `"presentations about 2 months ago"` | Files matching "presentations" context from ~2 months ago |
+| `"downloads from last week"` | Files in downloads folder from last week |
 
 ## Requirements
 
-- **macOS** (required for Spotlight integration)
+- **macOS** (required for Spotlight integration, cross platform support in works.)
 - **Python 3.8+**
-- **llama-cpp-python** with Qwen3-0.6B GGUF (local LLM inference)
-
-> Currently planning to fine tune Gemma 3 270M for a smaller and faster model for this use case.
 
 ## Installation
 
@@ -72,23 +60,32 @@ git clone https://github.com/monkesearch/monkesearch
 cd monkeSearch
 ```
 
-
-
 ### 2. Install dependencies using the requirements file:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Install and Setup llama-cpp-python
-
-See the [llama-cpp-python installation guide](https://github.com/abetlen/llama-cpp-python) for detailed instructions.
-
-You'll need to download Qwen3-0.6B GGUF model file and place it in your project directory.
-
-### 4. Verify Setup
+### 3. Install LEANN
 ```bash
-# Test the parser
-python parser.py "python files from yesterday"
+pip install leann
+```
+
+### 4. Build the Index
+```bash
+# First, dump Spotlight metadata
+python spotlight_dump.py 1000  # Dump 1000 files
+
+# Build LEANN index
+python build_index.py spotlight_dump.json
+
+# The default recompute settings for LEANN are set to false, so the index size might be comparatively large.
+python build_index.py spotlight_dump.json
+```
+
+### 5. Verify Setup
+```bash
+# Test search
+python leann-plus-temporal-search.py "pdf documents 2 weeks ago"
 ```
 
 ## Usage
@@ -96,42 +93,53 @@ python parser.py "python files from yesterday"
 ### Command Line
 ```bash
 cd app/
-# Basic search
-python parser.py "photos from last week"
 
-# More examples
-python parser.py "python scripts modified yesterday"
-python parser.py "pdf invoices from 2023"
-python parser.py "music files"
-python parser.py "old presentations"
+# Basic semantic search
+python leann-plus-temporal-search.py "photos"
+
+# Temporal search
+python leann-plus-temporal-search.py "documents from 3 days ago"
+python leann-plus-temporal-search.py "downloads from last week"
+python leann-plus-temporal-search.py "files from around 2 months ago"
+
+# Specify number of results (top-k)
+python leann-plus-temporal-search.py "presentations" 10
 ```
 
 ### As a Module
 ```python
-from parser import FileSearchParser
+from search_index import search_files
 
-# Initialize the parser
-searcher = FileSearchParser()
+# Perform a semantic search with temporal filtering
+results = search_files("documents from last week", top_k=15)
 
-# Perform a search
-results, parsed_data = searcher.search("python files from last week")
-
-# results contains file paths
-for path in results:
-    print(path)
+# Results are SearchResult objects with score, text, and metadata
+for result in results:
+    print(f"Score: {result.score}")
+    print(f"File: {result.text}")
+    print(f"Created: {result.metadata.get('creation_date')}")
 ```
+
+## How It Works
+
+1. **Metadata Extraction**: Spotlight metadata is extracted for files (name, path, type, dates)
+2. **Embedding Generation**: File metadata is converted to embeddings using sentence transformers
+3. **LEANN Indexing**: Embeddings are stored in a graph-based index with 97% storage savings (not enabled by default for now)
+4. **Query Processing**: 
+   - Temporal expressions are extracted via regex ("3 days ago" → ISO timestamp range)
+   - Stop words are removed from temporal parsing
+   - Clean query is embedded for semantic search
+5. **Search & Filter**: LEANN performs semantic search, then results are filtered by date if temporal expression found
 
 ## Limitations
 
 - **Indexed Files Only**: Only searches files indexed by Spotlight
-- **Local Model Limitations**: The small AI model may misunderstand very complex queries
-- **Basic Temporal Parsing**: Currently supports simple time expressions (More features to be added soon! See [technical](src/technical.md) for planned features)
+- **Metadata-based**: Searches file metadata, not file contents (can be added as a feature later)
+- **Basic Temporal Parsing**: Currently supports simple time expressions
 
 ## License
 
 Apache-2.0 license
-
-
 
 ## Star History
 
@@ -143,12 +151,10 @@ Apache-2.0 license
  </picture>
 </a>
 
-
 ## Acknowledgments
-- Big thanks to [utitools](https://github.com/RhetTbull/utitools)
-- [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) for local LLM inference
-- Uses Apple's Spotlight and Foundation frameworks.
+- [LEANN](https://github.com/yichuan-w/LEANN) team for collaborating and communication, and the tool of course.
+- Uses Apple's Spotlight and Foundation frameworks
 
 ---
 
-**Note**: This is an experimental prototype created to explore natural language file searching on macOS. It's not production-ready and should be used for experimentation and learning purposes.
+**Note**: This is an experimental prototype created to explore semantic file searching on macOS. It's not production-ready and should be used for experimentation and learning purposes.

@@ -1,4 +1,1 @@
-llama-cpp-python
-pyobjc
-utitools
-pydantic
+leann
