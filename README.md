@@ -6,6 +6,7 @@
 
 A prototype system that brings semantic search capabilities to your file system using a very low profile vector database (size in a few KBs / MBs only), allowing you to search for files using natural language queries with temporal awareness like "documents from last week" or "photos from 3 days ago". Nothing leaves your PC, fully offline with local vector embeddings.
 
+
 > ⚠️ **Prototype**: This is an initial proof-of-concept implementation. Expect rough edges and limited functionality.
 > Currently aimed at macOS but the logic is independent for cross platform adaptations. (In the works!) visit [discussions](https://github.com/monkesearch/monkeSearch/discussions/8)
 
@@ -19,7 +20,7 @@ A prototype system that brings semantic search capabilities to your file system 
 > please star the repo too, if you've read it till here :P
 
 ## Overview
-
+Read the technical details at [technical.md](src/technical.md)
 
 This system combines:
 - **LEANN vector database** for semantic search with 97% storage savings

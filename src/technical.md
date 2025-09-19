@@ -4,6 +4,7 @@ Deep dive into MonkeSearch's architecture using LEANN vector database for semant
 
 <br>
 <img width="3985" height="2929" alt="image" src="https://github.com/user-attachments/assets/1393fc1d-52e0-4a3e-9825-0d9b924c8e19" />
+The core idea revolves around the fact that we can convert any semantic file search related query into 3 constituents as stated above.
 
 ## How It Works
 
