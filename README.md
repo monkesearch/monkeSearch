@@ -36,9 +36,9 @@ This system combines:
 There are multiple implementations in different branches written in achieving the same task, for testing purposes. Rigorous evals and testing will be done before finalizing on a single one for the main release.
 
 - [Initial implementation using LangExtract](https://github.com/monkesearch/monkeSearch/tree/feature/llama-cpp-support) (Both Ollama and local llama cpp server support)
-
-- llama.cpp rewrite to remove dependency on LangExtract (this branch)
-- llama.cpp [feature branch](https://github.com/monkesearch/monkeSearch/tree/feature/chunking) with more detailed response model. Currently being worked upon, and evals are being done. 
+- Current main branch implementation focusing on a vector db based semantic search with temporal awareness (implemented via regex). This implementation uses [LEANN](https://github.com/yichuan-w/LEANN) and also is contributed to the LEANN's official repo.
+- llama.cpp rewrite to remove dependency on LangExtract (legacy-main-llm-implementation)
+- llama.cpp [feature branch](https://github.com/monkesearch/monkeSearch/tree/feature/chunking) with more detailed response model.
 
 
 ## Example Queries
