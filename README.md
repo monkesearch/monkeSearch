@@ -76,7 +76,6 @@ python spotlight_dump.py 1000  # Dump 1000 files
 python build_index.py spotlight_dump.json
 
 # The default recompute settings for LEANN are set to false, so the index size might be comparatively large.
-python build_index.py spotlight_dump.json
 ```
 
 ### 4. Verify Setup
