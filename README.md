@@ -29,12 +29,12 @@ This system combines:
 - **Semantic similarity matching** using embeddings instead of exact keyword matching
 
 ## Implementation versions
-There are multiple implementations in different branches written in achieving the same task, for testing purposes. Rigorous evals and testing will be done before finalizing on a single one for the main release.
+There are multiple implementations in different branches written in achieving the same task, for testing purposes. Rigorous evals and testing will be done before finalizing on a single one for the main release. For the current version, I collaborated with the developers of LEANN (2.6k stars on GitHub) and contributed to both the repositories. 
 
 > **For Agentic Use:** The legacy LLM-based implementations (branches below) are particularly suitable for integration into larger AI pipelines and agentic systems. These versions allow direct filesystem access through natural language without modifying any files, leveraging OS-level scoped safety through Spotlight. If you're building autonomous agents or LLM orchestration systems that need file discovery capabilities, these branches provide a direct LLM-to-filesystem bridge without the overhead of maintaining a separate index.
 
 - [Initial implementation using LangExtract](https://github.com/monkesearch/monkeSearch/tree/feature/llama-cpp-support) (Legacy - LLM based, ideal for agentic pipelines)
-- **Current main branch**: LEANN-based semantic search with temporal awareness via regex parsing
+- **Current main branch**: LEANN-based semantic search with temporal awareness via regex parsing 
 - llama.cpp rewrite (legacy-main-llm-implementation) - deprecated but useful for direct LLM integration
 - llama.cpp [feature branch](https://github.com/monkesearch/monkeSearch/tree/feature/chunking) - another variation of the llama.cpp rewrite, with a detailed response model.
 
