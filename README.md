@@ -31,10 +31,12 @@ This system combines:
 ## Implementation versions
 There are multiple implementations in different branches written in achieving the same task, for testing purposes. Rigorous evals and testing will be done before finalizing on a single one for the main release.
 
-- [Initial implementation using LangExtract](https://github.com/monkesearch/monkeSearch/tree/feature/llama-cpp-support) (Legacy - LLM based)
+> **For Agentic Use:** The legacy LLM-based implementations (branches below) are particularly suitable for integration into larger AI pipelines and agentic systems. These versions allow direct filesystem access through natural language without modifying any files, leveraging OS-level scoped safety through Spotlight. If you're building autonomous agents or LLM orchestration systems that need file discovery capabilities, these branches provide a direct LLM-to-filesystem bridge without the overhead of maintaining a separate index.
+
+- [Initial implementation using LangExtract](https://github.com/monkesearch/monkeSearch/tree/feature/llama-cpp-support) (Legacy - LLM based, ideal for agentic pipelines)
 - **Current main branch**: LEANN-based semantic search with temporal awareness via regex parsing
-- llama.cpp rewrite (legacy-main-llm-implementation) - deprecated
-- llama.cpp [feature branch](https://github.com/monkesearch/monkeSearch/tree/feature/chunking) - deprecated but can be considered for testing.
+- llama.cpp rewrite (legacy-main-llm-implementation) - deprecated but useful for direct LLM integration
+- llama.cpp [feature branch](https://github.com/monkesearch/monkeSearch/tree/feature/chunking) - another variation of the llama.cpp rewrite, with a detailed response model.
 
 ## Example Queries
 #### The system performs semantic search on file metadata with temporal filtering, understanding context without exact keyword matching
