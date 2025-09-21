@@ -9,7 +9,7 @@ A prototype system that brings semantic search capabilities to your file system 
 
 > ⚠️ **Prototype**: This is an initial proof-of-concept implementation. Expect rough edges and limited functionality.
 > Currently aimed at macOS but the logic is independent for cross platform adaptations. (In the works!) visit [discussions](https://github.com/monkesearch/monkeSearch/discussions/8)
-
+#### watch an intro video i made on this project [here](https://youtu.be/J2O5yv1h6cs)
 > ### Developer note:
 > I've been working on this project since long and this idea had many versions. The current implementation uses LEANN, a vector database that saves 97% storage compared to traditional solutions. The system builds a semantic index of your files' metadata and enables temporal-aware search through regex parsing.
 > The current turnaround time for this tool to receive a query and return files is sub-second thanks to LEANN's efficient code. This is under active
