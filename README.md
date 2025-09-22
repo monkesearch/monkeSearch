@@ -118,6 +118,28 @@ for result in results:
     print(f"Created: {result.metadata.get('creation_date')}")
 ```
 
+## Usage (Windows)
+
+### Install Dependencies
+```bash
+pip install -r requirements.txt
+``` 
+
+### dump metadata using os.walk 
+```bash
+python app/os_walk_dump.py 1000 [change number of files to index]
+```
+
+### build chromadb index 
+```bash
+python app/chroma_index_builder.py os_walk_dump.json
+```
+
+### search 
+```bash
+python app/chroma-plus-temporal-search.py "presentations from last month"
+```
+
 ## How It Works
 
 1. **Metadata Extraction**: Spotlight metadata is extracted for files (name, path, type, dates)
