@@ -117,6 +117,7 @@ for result in results:
     print(f"File: {result.text}")
     print(f"Created: {result.metadata.get('creation_date')}")
 ```
+--- 
 
 ## Usage (Windows)
 
@@ -139,6 +140,7 @@ python app/chroma_index_builder.py os_walk_dump.json
 ```bash
 python app/chroma-plus-temporal-search.py "presentations from last month"
 ```
+--- 
 
 ## How It Works
 
