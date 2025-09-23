@@ -143,7 +143,7 @@ Will be updated after testing
 
 ### Core Features
 - [ ] GUI interface for easier usage
-- [ ] Windows/Linux support via alternative indexing
+- [X] Windows/Linux support via alternative indexing
 - [ ] Content-based search (not just metadata)
 - [ ] Smarter algorithms.
 - [ ] Multi Model system with indexing for video/ audio/ images using generated context.
@@ -172,7 +172,6 @@ The system understands context without exact matches:
 
 ## Limitations
 - **Metadata only**: Doesn't search file contents
-- **Spotlight dependency**: Requires macOS Spotlight indexing (for now)
 - **Static index**: Requires manual rebuild for new files
 - **Language**: English-focused temporal expressions
 
