@@ -117,6 +117,28 @@ for result in results:
     print(f"File: {result.text}")
     print(f"Created: {result.metadata.get('creation_date')}")
 ```
+## Usage (Windows)
+
+### Install Dependencies
+```bash
+pip install -r requirements.txt
+``` 
+
+### dump metadata using os.walk 
+```bash
+python app/windows/windows_index_dump.py 1000 [change number of files to index]
+```
+
+### build chromadb index 
+```bash
+python app/windows/chroma_index_builder.py os_walk_dump.json
+```
+
+### search 
+```bash
+python app/windows/chroma-plus-temporal-search.py "presentations from last month"
+```
+--- 
 
 ## How It Works
 
