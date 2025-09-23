@@ -8,7 +8,7 @@ A prototype system that brings semantic search capabilities to your file system 
 
 
 > ⚠️ **Prototype**: This is an initial proof-of-concept implementation. Expect rough edges and limited functionality.
-> Currently aimed at macOS but the logic is independent for cross platform adaptations. (In the works!) visit [discussions](https://github.com/monkesearch/monkeSearch/discussions/8)
+> Originally aimed at macOS, but now supports Linux as well. Windows support is coming soon. For more details, visit [discussions](https://github.com/monkesearch/monkeSearch/discussions/8).
 #### watch an intro video i made on this project [here](https://youtu.be/J2O5yv1h6cs)
 > ### Developer note:
 > I've been working on this project since long and this idea had many versions. The current implementation uses LEANN, a vector database that saves 97% storage compared to traditional solutions. The system builds a semantic index of your files' metadata and enables temporal-aware search through regex parsing.
@@ -24,7 +24,6 @@ Read the technical details at [technical.md](src/technical.md)
 
 This system combines:
 - **LEANN vector database** for semantic search with 97% storage savings
-- **Native macOS Spotlight integration** for fast, efficient file metadata extraction
 - **Temporal expression parsing** for time-based searches (3 weeks ago, 10 months ago, etc.)
 - **Semantic similarity matching** using embeddings instead of exact keyword matching
 
@@ -52,7 +51,7 @@ There are multiple implementations in different branches written in achieving th
 
 ## Requirements
 
-- **macOS** (required for Spotlight integration, cross platform support in works.)
+- **macOS** or **Linux** (support for windows coming soon.)
 - **Python 3.8+**
 
 ## Installation
@@ -155,4 +154,4 @@ Apache-2.0 license
 
 ---
 
-**Note**: This is an experimental prototype created to explore semantic file searching on macOS. It's not production-ready and should be used for experimentation and learning purposes.
+**Note**: This is an experimental prototype created to explore semantic file searching on macOS/Linux. It's not production-ready and should be used for experimentation and learning purposes.
