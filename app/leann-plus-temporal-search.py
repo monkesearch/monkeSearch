@@ -87,9 +87,14 @@ def search_files(query, top_k=15):
         for match in time_matches:
             clean_query = clean_query.replace(match['full_match'], '').strip()
     
+    # Check if clean_query is too short (meaning it was mostly/only time expressions)
+    if len(clean_query) < 4:
+        print("Error: add more input for accurate results.")
+        return
+    
     # Single query to vector DB
     searcher = LeannSearcher(INDEX_PATH)
-    results = searcher.search(clean_query if clean_query else query, top_k=top_k, recompute_embeddings=False)
+    results = searcher.search(clean_query, top_k=top_k, recompute_embeddings=False)
     
     # Filter by time if time expression found
     if time_matches:
