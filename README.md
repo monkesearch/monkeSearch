@@ -3,6 +3,8 @@
 ![logo](src/fin.jpg)
 
 ---
+Read the technical report at: [monkesearch.github.io](https://monkesearch.github.io)
+---
 
 A prototype system that brings semantic search capabilities to your file system using lightweight vector databases, allowing you to search for files using natural language queries with temporal awareness like "documents from last week" or "photos from 3 days ago". Nothing leaves your PC, fully offline with local vector embeddings.
 
