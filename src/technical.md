@@ -193,7 +193,7 @@ Feel free to:
 
 ## Technical Stack
 
-- **Python 3.x**: Core implementation
+- **Python 3.12**: Core implementation
 - **LEANN**: Graph-based vector database with 97% storage savings
 - **Sentence Transformers**: Embedding generation
 - **PyObjC**: Bridge to macOS Foundation framework

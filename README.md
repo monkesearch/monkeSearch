@@ -61,7 +61,7 @@ There are multiple implementations in different branches written in achieving th
 
 ## Requirements
 
-- **Python 3.8+**
+- **Python 3.12**
 - **Platform-specific notes:**
   - **macOS**: Spotlight indexing enabled (uses Foundation framework)
   - **Linux**: Standard file system access via os.walk
