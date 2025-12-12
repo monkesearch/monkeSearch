@@ -19,14 +19,26 @@ class QueryExtractor:
         )
         # Shortened prompt
         self.prompt = textwrap.dedent("""\
-                                      /no_think
-            Extract from search queries:
-            
-            FILE TYPES: Include extensions and set specific=true for exact types (pdf, mp4), false for categories (images, documents).
-            
-            TEMPORAL: Only extract explicit numeric values from the past.
-            - time_unit: days, weeks, months, years
-            - value: numeric only""")
+        /no_think
+        Extract file types AND time references from search queries.
+        
+        FILE TYPES: 
+        - Extensions: pdf, py, mp4 with specific true
+        - Categories: images, documents, videos with specific false
+        - Extensions list: pdf is pdf, python is py, excel is xlsx, images is jpg,png, videos is mp4,avi
+        
+        TEMPORAL (if present):
+        - time_unit: "days", "weeks", "months", "years" (plural only)
+        - value: Integer only (1, 2, 3)
+        - yesterday is days,1 | last week is weeks,1 | 7 months ago is months,7
+        
+        Examples:
+        "pdf 7 months ago" extracts file_type: pdf,pdf,true AND temporal: 7 months ago,months,7
+        "python scripts 3 days ago" extracts file_type: python scripts,py,true AND temporal: 3 days ago,days,3
+        "images yesterday" extracts file_type: images,jpg,png,false AND temporal: yesterday,days,1
+        "pdf files" extracts file_type: pdf,pdf,true with no temporal
+        
+        Always extract BOTH if present.""")
         
         # Reduced examples to fit context
         self.examples = [
