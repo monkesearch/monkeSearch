@@ -28,16 +28,18 @@ class QueryExtractor:
                         Extract file search information. Answer each field:
                         
                         file_types: List file extensions that match the query
-                        
                         is_specific: Answer TRUE or FALSE
                         - TRUE if query mentions exact file type: "python", "pdf", "excel", "mp4", "java"
                         - FALSE if query mentions category: "images", "documents", "media", "code"
+                        always give the nearest possible file type if the is_specific flag is false, 
+                        for example if someone types images, don't give "images" in the file_types category but any file type associated with images like "jpeg"
+                        but make sure to choose the most directly associated or most widely known file type in terms of familiarity.
                         
                         Examples:
-                        "python scripts" → file_types: ["py"], is_specific: true
-                        "pdf" → file_types: ["pdf"], is_specific: true  
-                        "images" → file_types: ["jpg","png"], is_specific: false
-                        "documents" → file_types: ["pdf","docx"], is_specific: false
+                        "python scripts" - file_types: ["py"], is_specific: true
+                        "pdf" - file_types: ["pdf"], is_specific: true  
+                        "images" - file_types: ["jpg","png"], is_specific: false
+                        "documents" - file_types: ["pdf","docx"], is_specific: false
                         
                         time_unit/time_unit_value: Extract if present, else empty string
                         source_text: Track exact words used
@@ -68,7 +70,7 @@ class QueryExtractor:
                     "required": ["file_types", "time_unit", "time_unit_value", "is_specific", "source_text"],
                 },
             },
-            temperature=0.1,
+            temperature=0.5,
         )
         content = response['choices'][0]['message']['content']
         return content
