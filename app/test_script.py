@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Simple test suite for monkeSearch query parser (llama_cpp implementation)
-Run: python test_monke_llamacpp.py
+Run: python test_script.py
 """
 
 import sys
@@ -13,13 +13,16 @@ from query_gen import QueryExtractor
 
 
 def test_query(extractor, query, expected_file_types, expected_temporal_unit=None, 
-               expected_temporal_value=None, test_name=""):
+               expected_temporal_value=None, expected_is_specific=False, test_name=""):
     """Test a single query"""
     result_json = extractor.llm_query_gen(query)
     result = json.loads(result_json)
     
     # Check file types
     file_types_match = set(result["file_types"]) == set(expected_file_types)
+    
+    # Check is_specific flag
+    is_specific_match = result.get("is_specific", False) == expected_is_specific
     
     # Check temporal
     temporal_match = True
@@ -34,13 +37,15 @@ def test_query(extractor, query, expected_file_types, expected_temporal_unit=Non
         temporal_match = (not result.get("time_unit") or result.get("time_unit") == "") and \
                         (not result.get("time_unit_value") or result.get("time_unit_value") == "")
     
-    passed = file_types_match and temporal_match
+    passed = file_types_match and temporal_match and is_specific_match
     
     status = "✓ PASS" if passed else "✗ FAIL"
     print(f"{status} {test_name}")
     print(f"    Query: '{query}'")
     if not passed:
         print(f"    Expected file_types: {expected_file_types}, Got: {result['file_types']}")
+        if not is_specific_match:
+            print(f"    Expected is_specific: {expected_is_specific}, Got: {result.get('is_specific')}")
         if expected_temporal_unit:
             expected_temp = f"{expected_temporal_unit}:{expected_temporal_value}"
             actual_temp = f"{result.get('time_unit', '')}:{result.get('time_unit_value', '')}"
@@ -64,22 +69,27 @@ def main():
     print("-" * 70)
     
     passed, has_temp = test_query(extractor, "pdf files", ["pdf"], 
+                                  expected_is_specific=True,
                                   test_name="Test 1: PDF files")
     results_no_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "python scripts", ["py"], 
+                                  expected_is_specific=True,
                                   test_name="Test 2: Python scripts")
     results_no_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "images", ["jpg", "png"], 
+                                  expected_is_specific=False,
                                   test_name="Test 3: Images (generic)")
     results_no_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "excel spreadsheets", ["xlsx"], 
+                                  expected_is_specific=True,
                                   test_name="Test 4: Excel files")
     results_no_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "videos", ["mp4", "avi"], 
+                                  expected_is_specific=False,
                                   test_name="Test 5: Videos (generic)")
     results_no_temporal.append(passed)
     
@@ -90,22 +100,27 @@ def main():
     print("-" * 70)
     
     passed, has_temp = test_query(extractor, "files from yesterday", [], "days", "1",
+                                  expected_is_specific=False,
                                   test_name="Test 6: Yesterday")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "from 3 days ago", [], "days", "3",
+                                  expected_is_specific=False,
                                   test_name="Test 7: 3 days ago")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "last week", [], "weeks", "1",
+                                  expected_is_specific=False,
                                   test_name="Test 8: Last week")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "7 months ago", [], "months", "7",
+                                  expected_is_specific=False,
                                   test_name="Test 9: 7 months ago")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "2 years ago", [], "years", "2",
+                                  expected_is_specific=False,
                                   test_name="Test 10: 2 years ago")
     results_with_temporal.append(passed)
     
@@ -116,22 +131,27 @@ def main():
     print("-" * 70)
     
     passed, has_temp = test_query(extractor, "python scripts from 3 days ago", ["py"], "days", "3",
+                                  expected_is_specific=True,
                                   test_name="Test 11: Python + 3 days ago")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "photos from yesterday", ["jpg", "png"], "days", "1",
+                                  expected_is_specific=False,
                                   test_name="Test 12: Photos + yesterday")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "pdf 7 months ago", ["pdf"], "months", "7",
+                                  expected_is_specific=True,
                                   test_name="Test 13: PDF + 7 months ago")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "images from last week", ["jpg", "png"], "weeks", "1",
+                                  expected_is_specific=False,
                                   test_name="Test 14: Images + last week")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "excel files from 2 years ago", ["xlsx"], "years", "2",
+                                  expected_is_specific=True,
                                   test_name="Test 15: Excel + 2 years ago")
     results_with_temporal.append(passed)
     
@@ -142,22 +162,27 @@ def main():
     print("-" * 70)
     
     passed, has_temp = test_query(extractor, "markdown and text documents", ["md", "txt"],
+                                  expected_is_specific=True,
                                   test_name="Test 16: Markdown and text")
     results_no_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "all my code files", ["py", "js", "java", "cpp"],
+                                  expected_is_specific=False,
                                   test_name="Test 17: Generic code files")
     results_no_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "presentations", ["pptx", "ppt"],
+                                  expected_is_specific=False,
                                   test_name="Test 18: Presentations")
     results_no_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "audio files", ["mp3", "wav", "flac"],
+                                  expected_is_specific=False,
                                   test_name="Test 19: Audio files")
     results_no_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "word documents", ["docx", "doc"],
+                                  expected_is_specific=True,
                                   test_name="Test 20: Word documents")
     results_no_temporal.append(passed)
     
@@ -168,22 +193,27 @@ def main():
     print("-" * 70)
     
     passed, has_temp = test_query(extractor, "files from last month", [], "months", "1",
+                                  expected_is_specific=False,
                                   test_name="Test 21: Last month")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "from the past 2 weeks", [], "weeks", "2",
+                                  expected_is_specific=False,
                                   test_name="Test 22: Past 2 weeks")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "files from today", [], "days", "0",
+                                  expected_is_specific=False,
                                   test_name="Test 23: Today")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "6 months back", [], "months", "6",
+                                  expected_is_specific=False,
                                   test_name="Test 24: 6 months back")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "files modified this year", [], "years", "1",
+                                  expected_is_specific=False,
                                   test_name="Test 25: This year")
     results_with_temporal.append(passed)
     
@@ -194,22 +224,27 @@ def main():
     print("-" * 70)
     
     passed, has_temp = test_query(extractor, "word documents from last month", ["docx", "doc"], "months", "1",
+                                  expected_is_specific=True,
                                   test_name="Test 26: Word docs + last month")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "javascript files from this week", ["js"], "weeks", "1",
+                                  expected_is_specific=True,
                                   test_name="Test 27: JS files + this week")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "all pdfs from the past year", ["pdf"], "years", "1",
+                                  expected_is_specific=True,
                                   test_name="Test 28: PDFs + past year")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "csv files from 2 months ago", ["csv"], "months", "2",
+                                  expected_is_specific=True,
                                   test_name="Test 29: CSV + 2 months ago")
     results_with_temporal.append(passed)
     
     passed, has_temp = test_query(extractor, "video files from yesterday", ["mp4", "avi"], "days", "1",
+                                  expected_is_specific=False,
                                   test_name="Test 30: Videos + yesterday")
     results_with_temporal.append(passed)
     
