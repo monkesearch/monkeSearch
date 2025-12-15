@@ -51,7 +51,7 @@ def test_query(extractor, query, expected_file_types, expected_temporal_unit=Non
 
 def main():
     print("=" * 70)
-    print("MONKESEARCH TEST SUITE - 15 Test Cases (llama_cpp)")
+    print("MONKESEARCH TEST SUITE - 30 Test Cases (llama_cpp)")
     print("=" * 70)
     print()
     
@@ -130,11 +130,87 @@ def main():
     passed, has_temp = test_query(extractor, "images from last week", ["jpg", "png"], "weeks", "1",
                                   test_name="Test 14: Images + last week")
     results_with_temporal.append(passed)
-
-    #getting malformed json from above tests. using qwen 0.6b
     
     passed, has_temp = test_query(extractor, "excel files from 2 years ago", ["xlsx"], "years", "2",
                                   test_name="Test 15: Excel + 2 years ago")
+    results_with_temporal.append(passed)
+    
+    print()
+    
+    # Test 16-20: More realistic file type queries (NO TEMPORAL)
+    print("Realistic File Type Tests:")
+    print("-" * 70)
+    
+    passed, has_temp = test_query(extractor, "markdown and text documents", ["md", "txt"],
+                                  test_name="Test 16: Markdown and text")
+    results_no_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "all my code files", ["py", "js", "java", "cpp"],
+                                  test_name="Test 17: Generic code files")
+    results_no_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "presentations", ["pptx", "ppt"],
+                                  test_name="Test 18: Presentations")
+    results_no_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "audio files", ["mp3", "wav", "flac"],
+                                  test_name="Test 19: Audio files")
+    results_no_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "word documents", ["docx", "doc"],
+                                  test_name="Test 20: Word documents")
+    results_no_temporal.append(passed)
+    
+    print()
+    
+    # Test 21-25: More realistic temporal queries (WITH TEMPORAL)
+    print("Realistic Temporal Tests:")
+    print("-" * 70)
+    
+    passed, has_temp = test_query(extractor, "files from last month", [], "months", "1",
+                                  test_name="Test 21: Last month")
+    results_with_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "from the past 2 weeks", [], "weeks", "2",
+                                  test_name="Test 22: Past 2 weeks")
+    results_with_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "files from today", [], "days", "0",
+                                  test_name="Test 23: Today")
+    results_with_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "6 months back", [], "months", "6",
+                                  test_name="Test 24: 6 months back")
+    results_with_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "files modified this year", [], "years", "1",
+                                  test_name="Test 25: This year")
+    results_with_temporal.append(passed)
+    
+    print()
+    
+    # Test 26-30: More realistic combined queries (WITH TEMPORAL)
+    print("Realistic Combined Tests:")
+    print("-" * 70)
+    
+    passed, has_temp = test_query(extractor, "word documents from last month", ["docx", "doc"], "months", "1",
+                                  test_name="Test 26: Word docs + last month")
+    results_with_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "javascript files from this week", ["js"], "weeks", "1",
+                                  test_name="Test 27: JS files + this week")
+    results_with_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "all pdfs from the past year", ["pdf"], "years", "1",
+                                  test_name="Test 28: PDFs + past year")
+    results_with_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "csv files from 2 months ago", ["csv"], "months", "2",
+                                  test_name="Test 29: CSV + 2 months ago")
+    results_with_temporal.append(passed)
+    
+    passed, has_temp = test_query(extractor, "video files from yesterday", ["mp4", "avi"], "days", "1",
+                                  test_name="Test 30: Videos + yesterday")
     results_with_temporal.append(passed)
     
     # Summary
