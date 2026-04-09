@@ -8,10 +8,9 @@ Read the technical report at: [monkesearch.github.io](https://monkesearch.github
 
 A prototype system that brings semantic search capabilities to your file system, allowing you to search for files using natural language queries with temporal awareness like "documents from last week" or "photos from 3 days ago". Nothing leaves your PC, fully offline with local vector embeddings.
 
-> ⚠️ **Prototype**: This is an initial proof-of-concept implementation. Expect rough edges and limited functionality.
-> **Multi-platform support**: Now available for macOS, Linux, and Windows!
+<!-- This is a bare bones prototype, just commenting the note out because it doesn't look nice. -->
 
-#### watch an intro video i made on this project [here](https://youtu.be/J2O5yv1h6cs)
+<!-- #### watch an intro video i made on this project [here](https://youtu.be/J2O5yv1h6cs) -->
 
 ## Table of Contents
 - [The Idea](#the-idea)
