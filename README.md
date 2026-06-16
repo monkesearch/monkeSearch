@@ -8,7 +8,7 @@ Read the technical report at: [monkesearch.github.io](https://monkesearch.github
 
 ---
 
-A prototype for searching your files with natural language — **fully offline, runs on potato PCs**. No GPU required, no cloud API calls, nothing leaves your machine. Currently macOS-only (uses Spotlight) with cross-platform support in the works.
+A prototype for searching your files with natural language — **fully offline, aimed to run on potato PCs**. No GPU required, no cloud API calls, nothing leaves your machine. Currently macOS-only (uses Spotlight) with cross-platform support in the works.
 
 ## How It Works
 
@@ -23,7 +23,7 @@ monkeSearch uses a small local LLM (like LFM 1.2B) to parse queries and convert 
 ## Quick Start
 
 ```bash
-# Terminal 1: Start llama-server (keep running)
+# Terminal 1: Start llama-server (keep running) (or point to any openai compatible endpoint)
 llama-server --hf-repo LiquidAI/LFM2.5-1.2B-Instruct-GGUF --hf-file LFM2.5-1.2B-Instruct-Q8_0.gguf --port 8080
 
 # Terminal 2: Search your files
@@ -77,7 +77,7 @@ python parser.py "photos from last week"
 
 ## Limitations
 
-- **Spotlight-indexed files only**
+- **Spotlight-indexed files only** (more like a feature, you can scope your search)
 - **Metadata-only** — file content search planned
 - **Small LLM tradeoff** — tiny models can misunderstand complex queries
 - **Basic temporal** — simple time expressions only
