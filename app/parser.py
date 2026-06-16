@@ -76,7 +76,7 @@ class FileSearchParser:
             'the', 'a', 'an', 'and', 'any',
             'find', 'search', 'list', 'file', 'files',
             'ago', 'back',
-            'past', 'earlier', 'folder'
+            'earlier', 'folder'
         }
         words = query_text.split()
         filtered_words = [word for word in words if word.lower() not in STOP_WORDS]
@@ -98,21 +98,20 @@ class FileSearchParser:
         # Extract misc keywords from remaining text after LLM parsing
         misc_keywords = self.extract_misc_keywords(cleaned_query, parsed)
         
-        # Convert file types to UTIs and add predicates
+        # Convert file types to UTIs using per-indicator specificity
         utis = set()
-        for ft in parsed['file_types']:
-            uti = uti_for_suffix(ft.lower())
-            if uti:
-                if parsed['is_specific']:
-                    # Don't climb hierarchy for specific requests
-                    utis.add(uti)
-                else:
-                    # Climb hierarchy for broad categories
-                    hierarchy = content_type_tree_for_uti(uti)
-                    if hierarchy:
-                        parent_uti = hierarchy[1] if len(
-                            hierarchy) > 1 else hierarchy[0]
-                        utis.add(parent_uti)
+        for indicator in parsed.get('file_type_indicators', []):
+            for ext in indicator.get('extensions', []):
+                uti = uti_for_suffix(ext.lower())
+                if uti:
+                    if indicator['is_specific']:
+                        utis.add(uti)
+                    else:
+                        hierarchy = content_type_tree_for_uti(uti)
+                        if hierarchy:
+                            parent_uti = hierarchy[1] if len(
+                                hierarchy) > 1 else hierarchy[0]
+                            utis.add(parent_uti)
 
         if utis:
             uti_predicates = [
