@@ -4,151 +4,85 @@
 
 ---
 
-A prototype system that brings natural language search capabilities to your file system (macOS only for now), allowing you to search for files using everyday language like "python scripts from last week" or "photos from yesterday". Nothing leaves your pc, offline inference and can even run on potato PCs. You don't need a massive GPU rig to run the small model backing the intelligence.
+Read the technical report at: [monkesearch.github.io](https://monkesearch.github.io)
 
+---
 
-> ⚠️ **Prototype**: This is an initial proof-of-concept implementation. Expect rough edges and limited functionality.
-> Currently aimed at macOS but the logic is independent for cross platform adaptations. (In the works!) visit [discussions](https://github.com/monkesearch/monkeSearch/discussions/8)
+A prototype for searching your files with natural language — **fully offline, runs on potato PCs**. No GPU required, no cloud API calls, nothing leaves your machine. Currently macOS-only (uses Spotlight) with cross-platform support in the works.
 
-> ### Developer note:
-> I've been working on this project since long and this idea had many versions. Future plans include finetuning Gemma 3 270M and adding more smart features like temporal expressions and operators + smarter aggregation (See [future plans](src/technical.md) and please help me in implementing them! ).   
-> The current turnaround time for this tool to recieve a query and give out files is around 1 second and doesn't exceed it, the largest bottleneck is model inference. This is under active
-> development and any new suggestions + PRs are welcome. My goal for this tool is to be open source, safe and cross platform. So developers experienced in Windows/Linux Indexing are
-> very welcome to collaborate and develop their versions together.
->
-> 
-> please star the repo too, if you've read it till here :P
+## How It Works
 
-## Overview
+Any natural language file search query can be broken into 3 constituents:
 
-![usage gif](src/inference.gif)
+1. **File type** — what kind of file (pdf, image, python script, etc.)
+2. **Temporal context** — when (3 days ago, last week, 7 months ago)
+3. **Misc keywords** — any remaining context (project name, topic, content)
 
-> shows zero results because i don't have any videos related to "party" 
+monkeSearch uses a small local LLM (like LFM 1.2B) to parse queries and convert them into native macOS Spotlight search predicates.
 
+## Quick Start
 
-This system combines:
-- **AI-powered query parsing** using a local LLM (Qwen 0.6B) via llama.cpp to understand natural language
-- **Native macOS Spotlight integration** for fast, efficient file searching. (cross platform support is very welcome for development!)
-- **Intelligent file type recognition** that understands context (e.g., "resume" → PDF/DOCX files)
-- **Temporal expression parsing** for time-based searches. (3 weeks ago, 10 months ago, etc.)
-
-## Implementation versions
-There are multiple implementations in different branches written in achieving the same task, for testing purposes. Rigorous evals and testing will be done before finalizing on a single one for the main release.
-
-- [Initial implementation using LangExtract](https://github.com/monkesearch/monkeSearch/tree/feature/llama-cpp-support) (Both Ollama and local llama cpp server support)
-
-- llama.cpp rewrite to remove dependency on LangExtract (this branch)
-- llama.cpp [feature branch](https://github.com/monkesearch/monkeSearch/tree/feature/chunking) with more detailed response model. Currently being worked upon, and evals are being done. 
-
-
-## Example Queries
-#### You can convert any natural language query to 3 major constituents: File type, temporal data (time related), and miscellaneous (file name, path etc.) I used this idea as base to build the whole project, and yes it is that simple.
-
-
-
-| Natural Language Query | What It Finds |
-|------------------------|---------------|
-| `"photos from yesterday"` | Image files modified in the last day |
-| `"python scripts from three days ago"` | .py and .ipynb files from 3 days ago |
-| `"old music files"` | Audio files with "old" in name or content |
-| `"pdf invoices from 2023"` | PDF files from 2023 with "invoices" keyword |
-| `"resume from last week"` | Recent DOC/DOCX/PDF files with "resume" |
-| `"code files"` | Source code files of any language |
-
-
-## Requirements
-
-- **macOS** (required for Spotlight integration)
-- **Python 3.8+**
-- **llama-cpp-python** with Qwen3-0.6B GGUF (local LLM inference)
-
-> Currently planning to fine tune Gemma 3 270M for a smaller and faster model for this use case.
-
-## Installation
-
-### 1. Clone the Repository
 ```bash
-git clone https://github.com/monkesearch/monkesearch
-cd monkeSearch
-```
+# Terminal 1: Start llama-server (keep running)
+llama-server --hf-repo LiquidAI/LFM2.5-1.2B-Instruct-GGUF --hf-file LFM2.5-1.2B-Instruct-Q8_0.gguf --port 8080
 
-
-
-### 2. Install dependencies using the requirements file:
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Install and Setup llama-cpp-python
-
-See the [llama-cpp-python installation guide](https://github.com/abetlen/llama-cpp-python) for detailed instructions.
-
-You'll need to download Qwen3-0.6B GGUF model file and place it in your project directory.
-
-### 4. Verify Setup
-```bash
-# Test the parser
-python parser.py "python files from yesterday"
-```
-
-## Usage
-
-### Command Line
-```bash
+# Terminal 2: Search your files
 cd app/
-# Basic search
-python parser.py "photos from last week"
-
-# More examples
-python parser.py "python scripts modified yesterday"
-python parser.py "pdf invoices from 2023"
-python parser.py "music files"
-python parser.py "old presentations"
+python parser.py "photos from yesterday"
 ```
 
 ### As a Module
+
 ```python
 from parser import FileSearchParser
 
-# Initialize the parser
 searcher = FileSearchParser()
-
-# Perform a search
-results, parsed_data = searcher.search("python files from last week")
-
-# results contains file paths
+results, parsed_data, misc = searcher.search("python files from last week")
 for path in results:
     print(path)
 ```
 
+## Requirements
+
+- **macOS** (for Spotlight integration)
+- **Python 3.8+**
+- **llama-server** from [llama.cpp](https://github.com/ggml-org/llama.cpp) (install via `brew install llama.cpp`)
+- A GGUF model (default: LFM 2.5 1.2B, ~700MB)
+
+## Configuration
+
+Set `MONKE_SERVER_URL` to point to your llama-server (default: `http://localhost:8080/v1`):
+
+```bash
+export MONKE_SERVER_URL="http://192.168.1.42:8080/v1"
+python parser.py "photos from last week"
+```
+
+## Branches
+
+| Branch | Approach | Platform |
+|--------|----------|----------|
+| **main / dev** | LLM → Spotlight NSPredicate (this branch) | macOS |
+| **vectordb** | Vector DB (LEANN/ChromaDB) + semantic embeddings | macOS / Linux / Windows |
+
+## Example Queries
+
+| Query | What It Finds |
+|-------|---------------|
+| `"photos from yesterday"` | Image files modified in the last day |
+| `"python scripts from 3 days ago"` | .py files from 3 days ago |
+| `"pdf invoices from last month"` | PDFs with "invoices" modified in the last month |
+| `"code files"` | Source code files of any language |
+| `"videos from 2 years ago"` | Video files modified ~2 years ago |
+
 ## Limitations
 
-- **Indexed Files Only**: Only searches files indexed by Spotlight
-- **Local Model Limitations**: The small AI model may misunderstand very complex queries
-- **Basic Temporal Parsing**: Currently supports simple time expressions (More features to be added soon! See [technical](src/technical.md) for planned features)
+- **Spotlight-indexed files only**
+- **Metadata-only** — file content search planned
+- **Small LLM tradeoff** — tiny models can misunderstand complex queries
+- **Basic temporal** — simple time expressions only
+- **macOS-only** — see the `vectordb` branch for cross-platform
 
 ## License
 
-Apache-2.0 license
-
-
-
-## Star History
-
-<a href="https://www.star-history.com/#monkesearch/monkeSearch&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=monkesearch/monkeSearch&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=monkesearch/monkeSearch&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=monkesearch/monkeSearch&type=Date" />
- </picture>
-</a>
-
-
-## Acknowledgments
-- Big thanks to [utitools](https://github.com/RhetTbull/utitools)
-- [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) for local LLM inference
-- Uses Apple's Spotlight and Foundation frameworks.
-
----
-
-**Note**: This is an experimental prototype created to explore natural language file searching on macOS. It's not production-ready and should be used for experimentation and learning purposes.
+Apache-2.0
