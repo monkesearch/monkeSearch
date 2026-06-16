@@ -44,14 +44,20 @@ class FileSearchParser:
         )
 
     def extract_misc_keywords(self, cleaned_query, parsed_data):
-        """Extract remaining keywords after removing LLM-captured source text chunks"""
-        misc_keywords = cleaned_query
+        misc_keywords = cleaned_query.lower()
         
-        # Remove all source text chunks from the cleaned query
+        # Remove text from file_type_indicators
+        for indicator in parsed_data.get('file_type_indicators', []):
+            if indicator.get('text'):
+                misc_keywords = misc_keywords.replace(indicator['text'].lower(), "").strip()
+        
+        # Also remove temporal text if any
         if 'source_text' in parsed_data:
-            for field_name, field_value in parsed_data['source_text'].items():
-                if field_value and field_value.strip():
-                    misc_keywords = misc_keywords.lower().replace(field_value.strip().lower(), "").strip()
+            if parsed_data['source_text'].get('time_unit'):
+                misc_keywords = misc_keywords.replace(parsed_data['source_text']['time_unit'].lower(), "").strip()
+            if parsed_data['source_text'].get('time_unit_value'):
+                misc_keywords = misc_keywords.replace(parsed_data['source_text']['time_unit_value'].lower(), "").strip()
+        
         misc_keywords = ' '.join(misc_keywords.split())
         
         # Filter out words with 2 or fewer characters
@@ -70,33 +76,43 @@ class FileSearchParser:
             'the', 'a', 'an', 'and', 'any',
             'find', 'search', 'list', 'file', 'files',
             'ago', 'back',
-            'past', 'earlier', 'folder'
+            'earlier', 'folder'
         }
         words = query_text.split()
         filtered_words = [word for word in words if word.lower() not in STOP_WORDS]
         cleaned_query = " ".join(filtered_words)
         parsed = json.loads(self.extractor.llm_query_gen(cleaned_query))
+        file_types = []
+        is_specific = False
+        for indicator in parsed.get('file_type_indicators', []):
+            file_types.extend(indicator['extensions'])
+            if indicator['is_specific']:
+                is_specific = True
+        # adding these two after processing on top level for processing below, can be optimised later.
+        parsed['file_types'] = file_types
+        parsed['is_specific'] = is_specific
+
         predicates = []
         misc_keywords = []
         
         # Extract misc keywords from remaining text after LLM parsing
         misc_keywords = self.extract_misc_keywords(cleaned_query, parsed)
         
-        # Convert file types to UTIs and add predicates
+        # Convert file types to UTIs using per-indicator specificity
         utis = set()
-        for ft in parsed['file_types']:
-            uti = uti_for_suffix(ft.lower())
-            if uti:
-                if parsed['is_specific']:
-                    # Don't climb hierarchy for specific requests
-                    utis.add(uti)
-                else:
-                    # Climb hierarchy for broad categories
-                    hierarchy = content_type_tree_for_uti(uti)
-                    if hierarchy:
-                        parent_uti = hierarchy[1] if len(
-                            hierarchy) > 1 else hierarchy[0]
-                        utis.add(parent_uti)
+        for indicator in parsed.get('file_type_indicators', []):
+            for ext in indicator.get('extensions', []):
+                uti = uti_for_suffix(ext.lower())
+                if uti:
+                    if indicator['is_specific']:
+                        utis.add(uti)
+                    else:
+                        hierarchy = content_type_tree_for_uti(uti)
+                        if hierarchy:
+                            parent_uti = hierarchy[1] if len(
+                                hierarchy) > 1 else hierarchy[0]
+                            utis.add(parent_uti)
+
         if utis:
             uti_predicates = [
                 NSPredicate.predicateWithFormat_("kMDItemContentTypeTree CONTAINS %@", u)
@@ -179,7 +195,7 @@ if __name__ == "__main__":
         print(f"  Time unit: {parsed_data['time_unit']}")
         print(f"  Time unit value: {parsed_data['time_unit_value']}")
         print(f"  Misc keywords: {misc}")
-        print(f"  Is specific: {parsed_data['is_specific']}")
+        print(f"  Is specific: {parsed_data['is_specific']}\n")
         print(parsed_data)
         print(f"\nFound {len(results)} results:")
         for path in results[:10]:  # Show first 10
