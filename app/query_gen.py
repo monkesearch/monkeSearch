@@ -3,6 +3,43 @@ import json
 import urllib.request
 import textwrap
 
+SEARCH_SCHEMA = {
+    "name": "search_query",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "file_type_indicators": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "text": {"type": "string"},
+                        "extensions": {"type": "array", "items": {"type": "string"}},
+                        "is_specific": {"type": "boolean"},
+                    },
+                    "required": ["text", "extensions", "is_specific"],
+                    "additionalProperties": False,
+                },
+            },
+            "time_unit": {"type": "string"},
+            "time_unit_value": {"type": "string"},
+            "source_text": {
+                "type": "object",
+                "properties": {
+                    "file_types": {"type": "string"},
+                    "time_unit": {"type": "string"},
+                    "time_unit_value": {"type": "string"},
+                },
+                "required": ["file_types", "time_unit", "time_unit_value"],
+                "additionalProperties": False,
+            },
+        },
+        "required": ["file_type_indicators", "time_unit", "time_unit_value", "source_text"],
+        "additionalProperties": False,
+    },
+}
+
 
 class LLMServerClient:
     def __init__(self, base_url="http://localhost:8080/v1"):
@@ -15,7 +52,7 @@ class LLMServerClient:
             "max_tokens": max_tokens,
         }
         if response_format:
-            body["response_format"] = {"type": response_format.get("type", "json_object")}
+            body["response_format"] = response_format
         data = json.dumps(body).encode()
         req = urllib.request.Request(
             f"{self.base_url}/chat/completions",
@@ -64,7 +101,7 @@ class QueryExtractor:
                 },
                 {"role": "user", "content": query_text},
             ],
-            response_format={"type": "json_object"},
+            response_format={"type": "json_schema", "schema": SEARCH_SCHEMA},
             temperature=0.2,
         )
         content = response['choices'][0]['message']['content']
