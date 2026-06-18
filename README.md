@@ -10,6 +10,7 @@ Read the technical report at: [monkesearch.github.io](https://monkesearch.github
 
 A prototype for searching your files with natural language — **fully offline, aimed to run on potato PCs**. No GPU required, no cloud API calls, nothing leaves your machine. Currently macOS-only (uses Spotlight) with cross-platform support in the works.
 
+**Perfect for agentic use:** monkeSearch provides a direct LLM-to-filesystem bridge — natural language in, native Spotlight search out — without any file modifications, index maintenance, or cloud dependencies. It's a read-only, scoped-safe discovery layer purpose-built for AI agents and LLM orchestration pipelines that need to find files autonomously.
 ## How It Works
 
 Any natural language file search query can be broken into 3 constituents:
