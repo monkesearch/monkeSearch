@@ -4,7 +4,7 @@
 
 ---
 
-Read the technical report at: [monkesearch.github.io](https://monkesearch.github.io)
+Read the technical report and look at model performance benchmarks at: [monkesearch.github.io](https://monkesearch.github.io)
 
 ---
 
