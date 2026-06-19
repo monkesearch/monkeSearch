@@ -24,6 +24,10 @@ SEARCH_SCHEMA = {
             },
             "time_unit": {"type": "string"},
             "time_unit_value": {"type": "string"},
+            "time_direction": {
+                "type": "string",
+                "enum": ["", "after", "before"],
+            },
             "source_text": {
                 "type": "object",
                 "properties": {
@@ -35,7 +39,7 @@ SEARCH_SCHEMA = {
                 "additionalProperties": False,
             },
         },
-        "required": ["file_type_indicators", "time_unit", "time_unit_value", "source_text"],
+        "required": ["file_type_indicators", "time_unit", "time_unit_value", "time_direction", "source_text"],
         "additionalProperties": False,
     },
 }
@@ -85,17 +89,21 @@ class QueryExtractor:
                                          false if category (images, documents, media, code)
                         - time_unit: Unit like "minutes", "hours", "days", "weeks", "months", "years"
                         - time_unit_value: Number as string like "1", "2", "7" or exact word (today/yesterday/tomorrow)
+                        - time_direction: "" (empty for non-temporal), "after" (newer than, default), or "before" (older than)
                         - source_text: Object with:
                           - file_types: Exact words used to indicate file types
                           - time_unit: Exact words used to indicate time unit
                           - time_unit_value: Exact words used to indicate time value
 
                         Examples:
-                        "python scripts" → {"file_type_indicators":[{"text":"python","extensions":["py"],"is_specific":true}],"time_unit":"","time_unit_value":"","source_text":{"file_types":"python","time_unit":"","time_unit_value":""}}
-                        "pdf files" → {"file_type_indicators":[{"text":"pdf","extensions":["pdf"],"is_specific":true}],"time_unit":"","time_unit_value":"","source_text":{"file_types":"pdf","time_unit":"","time_unit_value":""}}
-                        "code from last week" → {"file_type_indicators":[{"text":"code","extensions":["py","js","java","cpp","ts","go","rs","rb"],"is_specific":false}],"time_unit":"weeks","time_unit_value":"1","source_text":{"file_types":"code","time_unit":"last week","time_unit_value":"last week"}}
-                        "images from yesterday" → {"file_type_indicators":[{"text":"images","extensions":["jpg","png","heic","webp"],"is_specific":false}],"time_unit":"days","time_unit_value":"1","source_text":{"file_types":"images","time_unit":"yesterday","time_unit_value":"yesterday"}}
-                        "documents created today" → {"file_type_indicators":[{"text":"documents","extensions":["pdf","docx","txt"],"is_specific":false}],"time_unit":"days","time_unit_value":"0","source_text":{"file_types":"documents","time_unit":"today","time_unit_value":"today"}}
+                        "python scripts" → {"file_type_indicators":[{"text":"python","extensions":["py"],"is_specific":true}],"time_unit":"","time_unit_value":"","time_direction":"","source_text":{"file_types":"python","time_unit":"","time_unit_value":""}}
+                        "pdf files" → {"file_type_indicators":[{"text":"pdf","extensions":["pdf"],"is_specific":true}],"time_unit":"","time_unit_value":"","time_direction":"","source_text":{"file_types":"pdf","time_unit":"","time_unit_value":""}}
+                        "code from last week" → {"file_type_indicators":[{"text":"code","extensions":["py","js","java","cpp","ts","go","rs","rb"],"is_specific":false}],"time_unit":"weeks","time_unit_value":"1","time_direction":"after","source_text":{"file_types":"code","time_unit":"last week","time_unit_value":"last week"}}
+                        "images from yesterday" → {"file_type_indicators":[{"text":"images","extensions":["jpg","png","heic","webp"],"is_specific":false}],"time_unit":"days","time_unit_value":"1","time_direction":"after","source_text":{"file_types":"images","time_unit":"yesterday","time_unit_value":"yesterday"}}
+                        "documents created today" → {"file_type_indicators":[{"text":"documents","extensions":["pdf","docx","txt"],"is_specific":false}],"time_unit":"days","time_unit_value":"0","time_direction":"after","source_text":{"file_types":"documents","time_unit":"today","time_unit_value":"today"}}
+                        "files older than 3 days" → {"file_type_indicators":[],"time_unit":"days","time_unit_value":"3","time_direction":"before","source_text":{"file_types":"","time_unit":"older than 3 days","time_unit_value":"older than 3 days"}}
+                        "pdf files older than 3 months" → {"file_type_indicators":[{"text":"pdf","extensions":["pdf"],"is_specific":true}],"time_unit":"months","time_unit_value":"3","time_direction":"before","source_text":{"file_types":"pdf","time_unit":"older than 3 months","time_unit_value":"older than 3 months"}}
+                        "meeting notes" → {"file_type_indicators":[],"time_unit":"","time_unit_value":"","time_direction":"","source_text":{"file_types":"","time_unit":"","time_unit_value":""}}
 
                         JSON only."""),
                 },

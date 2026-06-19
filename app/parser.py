@@ -12,8 +12,7 @@ class FileSearchParser:
     def __init__(self):
         self.extractor = QueryExtractor()
 
-    def calculate_date_predicate(self, time_unit, time_unit_value):
-        """Convert temporal data to date predicate - all time ranges are relative"""
+    def calculate_date_predicate(self, time_unit, time_unit_value, time_direction="after"):
         if not time_unit or not time_unit_value:
             return None
 
@@ -22,25 +21,22 @@ class FileSearchParser:
         except (ValueError, TypeError):
             return None
 
-        # Handle different time units - all relative from current date
         if time_unit == 'days':
             date = datetime.now() - timedelta(days=value)
-
         elif time_unit == 'weeks':
             date = datetime.now() - timedelta(weeks=value)
-
         elif time_unit == 'months':
-            # Approximate months as 30 days each
             date = datetime.now() - timedelta(days=value * 30)
-
         elif time_unit == 'years':
-            # Use 365 days per year approximation
             date = datetime.now() - timedelta(days=value * 365)
         else:
             return None
 
+        if not time_direction:
+            time_direction = "after"
+        op = ">" if time_direction == "after" else "<"
         return NSPredicate.predicateWithFormat_(
-            "kMDItemFSContentChangeDate > %@", date
+            f"kMDItemFSContentChangeDate {op} %@", date
         )
 
     def extract_misc_keywords(self, cleaned_query, parsed_data):
@@ -134,7 +130,11 @@ class FileSearchParser:
             predicates.append(keyword_pred)
 
         if parsed['time_unit'] and parsed['time_unit_value']:
-            date_pred = self.calculate_date_predicate(parsed['time_unit'], parsed['time_unit_value'])
+            time_direction = parsed.get('time_direction') or 'after'
+            date_pred = self.calculate_date_predicate(
+                parsed['time_unit'], parsed['time_unit_value'],
+                time_direction
+            )
             if date_pred:
                 predicates.append(date_pred)
 
@@ -194,6 +194,7 @@ if __name__ == "__main__":
         print(f"  File types: {parsed_data['file_types']}")
         print(f"  Time unit: {parsed_data['time_unit']}")
         print(f"  Time unit value: {parsed_data['time_unit_value']}")
+        print(f"  Time direction: {parsed_data.get('time_direction', 'after')}")
         print(f"  Misc keywords: {misc}")
         print(f"  Is specific: {parsed_data['is_specific']}\n")
         print(parsed_data)
